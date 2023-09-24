@@ -5,20 +5,32 @@ pub mod lib {
     use bevy::window::{PresentMode, PrimaryWindow};
     use bevy::winit::WinitWindows;
     use bevy::DefaultPlugins;
-    use bevy_egui::{EguiPlugin, EguiContexts, egui};
+    use bevy_egui::{egui, EguiContexts, EguiPlugin};
     use winit::window::Icon;
 
     #[derive(Component)]
     pub struct Cell {
-        cell_type: CellType
+        pub cell_type: CellType,
     }
+
+    #[derive(Component)]
+    pub struct CursorPosition {
+        pub pos: Vec2,
+    }
+
+    #[derive(Component)]
+    pub struct MainCamera;
 
     pub enum CellType {
         Sand,
-        Stone
+        Stone,
     }
 
-    const CELL_SIZE: Vec3 = Vec3{x: 10f32, y: 10f32, z: 10f32 };
+    const CELL_SIZE: Vec3 = Vec3 {
+        x: 10f32,
+        y: 10f32,
+        z: 10f32,
+    };
 
     #[derive(Component)]
     pub struct World {}
@@ -38,9 +50,11 @@ pub mod lib {
                         ..default()
                     }),
                     ..default()
-                },))
+                }))
                 .add_plugins(EguiPlugin)
-                .add_systems(Update, ui_example_system);
+                .add_systems(Update, ui_example_system)
+                .add_systems(Update, my_cursor_system)
+                .add_systems(Update, spawn_cell_on_click);
         }
     }
 
@@ -76,7 +90,10 @@ pub mod lib {
         mut meshes: ResMut<Assets<Mesh>>,
         mut materials: ResMut<Assets<ColorMaterial>>,
     ) {
-        commands.spawn(Camera2dBundle::default());
+        commands.spawn(CursorPosition {
+            pos: Vec2 { x: 0f32, y: 0f32 },
+        });
+        commands.spawn((Camera2dBundle::default(), MainCamera));
         commands.spawn((
             MaterialMesh2dBundle {
                 mesh: meshes.add(Mesh::from(shape::Quad::default())).into(),
@@ -97,34 +114,79 @@ pub mod lib {
                 })),
                 ..default()
             },
-            Cell { cell_type: CellType::Sand },
+            Cell {
+                cell_type: CellType::Sand,
+            },
         ));
     }
 
     fn my_cursor_system(
-        // need to get window dimensions
-        windows: Res<Windows>,
-        // query to get camera transform
+        windows: Query<&Window>,
         camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+        mut contexts: EguiContexts,
+        mut cursor_positions: Query<&mut CursorPosition>,
     ) {
-        // get the camera info and transform
-        // assuming there is exactly one main camera entity, so query::single() is OK
+        let window = windows.single();
         let (camera, camera_transform) = camera_q.single();
-    
-        // get the window that the camera is displaying to (or the primary window)
-        let window = if let RenderTarget::Window(id) = camera.target {
-            windows.get(id).unwrap()
-        } else {
-            windows.get_primary().unwrap()
-        };
-    
-        // check if the cursor is inside the window and get its position
-        // then, ask bevy to convert into world coordinates, and truncate to discard Z
-        if let Some(world_position) = window.cursor_position()
-            .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
-            .map(|ray| ray.origin.truncate())
+
+        let mut cursor_position = cursor_positions.single_mut();
+
+        if let Some(world_position) = window
+            .cursor_position()
+            .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
         {
-            eprintln!("World coords: {}/{}", world_position.x, world_position.y);
+            cursor_position.pos = world_position;
+            cursor_position.pos.x = (cursor_position.pos.x as i32) as f32;
+            cursor_position.pos.y = (cursor_position.pos.y as i32) as f32
         }
+
+        egui::Window::new("Cursor Position").show(contexts.ctx_mut(), |ui| {
+            ui.label(cursor_position.pos.to_string());
+        });
+    }
+
+    fn spawn_cell_on_click(
+        mut commands: Commands,
+        mut meshes: ResMut<Assets<Mesh>>,
+        mut materials: ResMut<Assets<ColorMaterial>>,
+        buttons: Res<Input<MouseButton>>,
+        cursor_positions: Query<&mut CursorPosition>,
+    ) {
+        if buttons.just_pressed(MouseButton::Left) {
+            spawn_cell(
+                commands,
+                meshes,
+                materials,
+                cursor_positions.single().pos.extend(0f32),
+            );
+        }
+    }
+
+    fn spawn_cell(
+        mut commands: Commands,
+        mut meshes: ResMut<Assets<Mesh>>,
+        mut materials: ResMut<Assets<ColorMaterial>>,
+        pos: Vec3,
+    ) {
+        commands.spawn((
+            MaterialMesh2dBundle {
+                mesh: meshes.add(Mesh::from(shape::Quad::default())).into(),
+                transform: Transform {
+                    translation: pos,
+                    scale: CELL_SIZE,
+                    ..Default::default()
+                },
+                material: materials.add(ColorMaterial::from(Color::Rgba {
+                    red: 0.194,
+                    green: 0.178,
+                    blue: 0.128,
+                    alpha: 1.0,
+                })),
+                ..default()
+            },
+            Cell {
+                cell_type: CellType::Sand,
+            },
+        ));
     }
 }
