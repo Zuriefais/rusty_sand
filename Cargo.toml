@@ -4,13 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = {version = "0.11.1", features = ["multi-threaded", "multi-threaded"]}
+bevy = {version = "0.11.2", features = ["multi-threaded", "dynamic_linking"]}
+bevy_egui = "0.21.0"
 image = "0.24.7"
+wgpu = "0.17.0"
 winit = "0.28.6"
-
-[target.x86_64-pc-windows-gnu]
-linker = "x86_64-w64-mingw32-gcc"
-rustflags = ["-Zshare-generics=off"]
 
 [toolchain]
 channel = "nightly"
