@@ -2,11 +2,13 @@ pub mod setup;
 pub mod lib {
     use bevy::prelude::*;
     use bevy::sprite::MaterialMesh2dBundle;
+    use bevy::utils::HashMap;
     use bevy::window::{PresentMode, PrimaryWindow};
     use bevy::winit::WinitWindows;
     use bevy::DefaultPlugins;
     use bevy_egui::{egui, EguiContexts, EguiPlugin};
     use winit::window::Icon;
+    use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
     #[derive(Component)]
     pub struct Cell {
@@ -21,6 +23,24 @@ pub mod lib {
     #[derive(Component)]
     pub struct MainCamera;
 
+    use lazy_static::lazy_static;
+
+    lazy_static! {
+        static ref CELL_COLOR: HashMap<CellType, bevy::render::color::Color> = {
+            let mut map = HashMap::new();
+            map.insert(
+                CellType::Sand,
+                bevy::render::color::Color::hex("f6d7b0").unwrap(),
+            );
+            map.insert(
+                CellType::Stone,
+                bevy::render::color::Color::hex("4E5754").unwrap(),
+            );
+            map
+        };
+    }
+
+    #[derive(Eq, PartialEq, Hash, std::fmt::Debug, Clone, Copy)]
     pub enum CellType {
         Sand,
         Stone,
@@ -31,6 +51,11 @@ pub mod lib {
         y: 10f32,
         z: 10f32,
     };
+
+    #[derive(Component)]
+    pub struct CellTypeToSpawn {
+        pub type_to_select: CellType,
+    }
 
     #[derive(Component)]
     pub struct World {}
@@ -52,9 +77,10 @@ pub mod lib {
                     ..default()
                 }))
                 .add_plugins(EguiPlugin)
-                .add_systems(Update, ui_example_system)
+                .add_systems(Update, spawn_cell_type)
                 .add_systems(Update, my_cursor_system)
-                .add_systems(Update, spawn_cell_on_click);
+                .add_systems(Update, spawn_cell_on_click)
+                .add_plugins(WorldInspectorPlugin::new());
         }
     }
 
@@ -79,10 +105,18 @@ pub mod lib {
         primary.set_window_icon(Some(icon));
     }
 
-    fn ui_example_system(mut contexts: EguiContexts) {
-        egui::Window::new("Hello").show(contexts.ctx_mut(), |ui| {
-            ui.label("world");
+    fn spawn_cell_type(mut contexts: EguiContexts, mut query: Query<&mut CellTypeToSpawn>) {
+        let mut selected = &query.single_mut().type_to_select.clone();
+        egui::Window::new("cell type").show(contexts.ctx_mut(), |ui| {
+            egui::ComboBox::from_label("Select one!")
+                .selected_text(format!("{:?}", selected))
+                .show_ui(ui, |ui| {
+                    ui.selectable_value(&mut selected, &CellType::Sand, "Sand");
+                    ui.selectable_value(&mut selected, &CellType::Stone, "Stone");
+                });
         });
+        query.single_mut().type_to_select = selected.clone();
+        // Use `ui.enum_select` to create the dropdown menu.
     }
 
     fn setup(
@@ -92,6 +126,9 @@ pub mod lib {
     ) {
         commands.spawn(CursorPosition {
             pos: Vec2 { x: 0f32, y: 0f32 },
+        });
+        commands.spawn(CellTypeToSpawn {
+            type_to_select: CellType::Sand,
         });
         commands.spawn((Camera2dBundle::default(), MainCamera));
         commands.spawn((
@@ -107,10 +144,10 @@ pub mod lib {
                     ..Default::default()
                 },
                 material: materials.add(ColorMaterial::from(Color::Rgba {
-                    red: 0.194,
-                    green: 0.178,
-                    blue: 0.128,
-                    alpha: 1.0,
+                    red: 0.246,
+                    green: 0.215,
+                    blue: 0.176,
+                    alpha: 0.256,
                 })),
                 ..default()
             },
@@ -146,18 +183,31 @@ pub mod lib {
     }
 
     fn spawn_cell_on_click(
-        mut commands: Commands,
-        mut meshes: ResMut<Assets<Mesh>>,
-        mut materials: ResMut<Assets<ColorMaterial>>,
+        commands: Commands,
+        meshes: ResMut<Assets<Mesh>>,
+        materials: ResMut<Assets<ColorMaterial>>,
         buttons: Res<Input<MouseButton>>,
         cursor_positions: Query<&mut CursorPosition>,
+        query: Query<&CellTypeToSpawn>,
+        cell_pos_query: Query<&Transform, With<Cell>>,
     ) {
-        if buttons.just_pressed(MouseButton::Left) {
+        if buttons.just_released(MouseButton::Left) {
+            let mut new_cursor_position = cursor_positions.single().pos;
+            new_cursor_position.x -= (new_cursor_position.x as i32 % CELL_SIZE.x as i32) as f32;
+            new_cursor_position.y -= (new_cursor_position.y as i32 % CELL_SIZE.x as i32) as f32;
+            for cell_pos in &cell_pos_query {
+
+                if cell_pos.translation == new_cursor_position.extend(0f32) {
+                    return;
+                }
+            }
+            
             spawn_cell(
                 commands,
                 meshes,
                 materials,
-                cursor_positions.single().pos.extend(0f32),
+                new_cursor_position.extend(0f32),
+                query.single().type_to_select,
             );
         }
     }
@@ -167,6 +217,7 @@ pub mod lib {
         mut meshes: ResMut<Assets<Mesh>>,
         mut materials: ResMut<Assets<ColorMaterial>>,
         pos: Vec3,
+        cell_type: CellType,
     ) {
         commands.spawn((
             MaterialMesh2dBundle {
@@ -176,16 +227,11 @@ pub mod lib {
                     scale: CELL_SIZE,
                     ..Default::default()
                 },
-                material: materials.add(ColorMaterial::from(Color::Rgba {
-                    red: 0.194,
-                    green: 0.178,
-                    blue: 0.128,
-                    alpha: 1.0,
-                })),
+                material: materials.add(ColorMaterial::from(CELL_COLOR[&cell_type])),
                 ..default()
             },
             Cell {
-                cell_type: CellType::Sand,
+                cell_type: cell_type,
             },
         ));
     }
