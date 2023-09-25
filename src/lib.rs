@@ -72,6 +72,7 @@ pub mod lib {
                         title: "rusty sand".into(),
                         resolution: (500., 300.).into(),
                         present_mode: PresentMode::AutoVsync,
+                        fit_canvas_to_parent: true,
                         ..default()
                     }),
                     ..default()
@@ -84,6 +85,7 @@ pub mod lib {
         }
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn set_window_icon(
         main_window: Query<Entity, With<PrimaryWindow>>,
         windows: NonSend<WinitWindows>,
@@ -104,6 +106,9 @@ pub mod lib {
         let icon = Icon::from_rgba(icon_rgba, icon_width, icon_height).unwrap();
         primary.set_window_icon(Some(icon));
     }
+
+    #[cfg(target_arch = "wasm32")]
+    pub fn set_window_icon() {}
 
     fn spawn_cell_type(mut contexts: EguiContexts, mut query: Query<&mut CellTypeToSpawn>) {
         let mut selected = &query.single_mut().type_to_select.clone();
