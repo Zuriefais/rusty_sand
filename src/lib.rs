@@ -7,8 +7,8 @@ pub mod lib {
     use bevy::winit::WinitWindows;
     use bevy::DefaultPlugins;
     use bevy_egui::{egui, EguiContexts, EguiPlugin};
-    use winit::window::Icon;
     use bevy_inspector_egui::quick::WorldInspectorPlugin;
+    use winit::window::Icon;
 
     #[derive(Component)]
     pub struct Cell {
@@ -80,7 +80,7 @@ pub mod lib {
                 .add_plugins(EguiPlugin)
                 .add_systems(Update, spawn_cell_type)
                 .add_systems(Update, my_cursor_system)
-                .add_systems(Update, spawn_cell_on_click)
+                .add_systems(Update, (spawn_cell_on_click, spawn_cell_on_touch))
                 .add_plugins(WorldInspectorPlugin::new());
         }
     }
@@ -201,20 +201,74 @@ pub mod lib {
             new_cursor_position.x -= (new_cursor_position.x as i32 % CELL_SIZE.x as i32) as f32;
             new_cursor_position.y -= (new_cursor_position.y as i32 % CELL_SIZE.x as i32) as f32;
             for cell_pos in &cell_pos_query {
-
                 if cell_pos.translation == new_cursor_position.extend(0f32) {
                     return;
                 }
             }
-            
+
             spawn_cell(
                 commands,
                 meshes,
                 materials,
                 new_cursor_position.extend(0f32),
                 query.single().type_to_select,
+                cell_pos_query
             );
         }
+    }
+
+    fn spawn_cell_on_touch(
+        commands: Commands,
+        meshes: ResMut<Assets<Mesh>>,
+        materials: ResMut<Assets<ColorMaterial>>,
+        query: Query<&CellTypeToSpawn>,
+        cell_pos_query: Query<&Transform, With<Cell>>,
+        touches: Res<Touches>,
+        windows: Query<&Window>,
+        camera_q: Query<(&Transform, &Camera), With<MainCamera>>,
+    ) {
+        for finger in touches.iter() {
+            if touches.just_pressed(finger.id()) {
+                    let touch_position = finger.position().clone();
+                    let mut new_touch_position = screen_to_world(touch_position, windows, camera_q);
+                    new_touch_position.x -= (new_touch_position.x as i32 % CELL_SIZE.x as i32) as f32;
+                    new_touch_position.y -= (new_touch_position.y as i32 % CELL_SIZE.x as i32) as f32;
+
+                    spawn_cell(
+                        commands,
+                        meshes,
+                        materials,
+                        new_touch_position,
+                        query.single().type_to_select,
+                        cell_pos_query,
+                    );
+                    return;
+            }
+        }
+    }
+
+    fn screen_to_world(
+        touch_position: Vec2,
+        windows_query: Query<&Window>,
+        cameras: Query<(&Transform, &Camera), With<MainCamera>>,
+    ) -> Vec3 {
+        let window = windows_query.iter().next().unwrap();
+        
+        // For the purpose of this example, we assume there's one main camera.
+        // Adjust as necessary for your setup.
+        let (camera_transform, camera) = cameras.iter().next().unwrap();
+    
+        // Screen to NDC
+        let ndc = Vec3::new(
+            (touch_position.x / window.width() as f32) * 2.0 - 1.0,
+            (touch_position.y / window.height() as f32) * 2.0 - 1.0,
+            0.5, // Middle of the near/far plane
+        );
+    
+        // NDC to world space
+        let world_position = camera.projection_matrix().inverse() * Vec4::new(ndc.x, ndc.y, ndc.z, 1.0);
+
+        (camera_transform.compute_matrix() * world_position).truncate()
     }
 
     fn spawn_cell(
@@ -223,7 +277,14 @@ pub mod lib {
         mut materials: ResMut<Assets<ColorMaterial>>,
         pos: Vec3,
         cell_type: CellType,
+        cell_pos_query: Query<&Transform, With<Cell>>,
     ) {
+        for cell_pos in &cell_pos_query {
+            if cell_pos.translation == pos {
+                return;
+            }
+        }
+
         commands.spawn((
             MaterialMesh2dBundle {
                 mesh: meshes.add(Mesh::from(shape::Quad::default())).into(),
