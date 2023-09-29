@@ -6,4 +6,5 @@
  editor working✅
  touch support in progress🚧
 
- physics in dev🚧
+ lagging physics ✅
+ good physics 🚧
