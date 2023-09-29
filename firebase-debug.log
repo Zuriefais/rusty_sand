@@ -1,0 +1,25 @@
+[debug] [2023-09-29T18:16:12.041Z] ----------------------------------------------------------------------
+[debug] [2023-09-29T18:16:12.042Z] Command:       /home/zurie/.nvm/versions/node/v18.16.1/bin/node /home/zurie/.nvm/versions/node/v18.16.1/bin/firebase deploy
+[debug] [2023-09-29T18:16:12.042Z] CLI Version:   12.6.1
+[debug] [2023-09-29T18:16:12.042Z] Platform:      linux
+[debug] [2023-09-29T18:16:12.043Z] Node Version:  v18.16.1
+[debug] [2023-09-29T18:16:12.043Z] Time:          Fri Sep 29 2023 21:16:12 GMT+0300 (Москва, стандартное время)
+[debug] [2023-09-29T18:16:12.043Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2023-09-29T18:16:12.086Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2023-09-29T18:16:12.087Z] > authorizing via signed-in user (zuriefais@gmail.com)
+[debug] [2023-09-29T18:16:12.087Z] [iam] checking project rusty-sand for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2023-09-29T18:16:12.088Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/rusty-sand:testIamPermissions [none]
+[debug] [2023-09-29T18:16:12.088Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/rusty-sand:testIamPermissions x-goog-quota-user=projects/rusty-sand
+[debug] [2023-09-29T18:16:12.088Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/rusty-sand:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2023-09-29T18:16:13.118Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/rusty-sand:testIamPermissions 200
+[debug] [2023-09-29T18:16:13.119Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/rusty-sand:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2023-09-29T18:16:13.119Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/rusty-sand [none]
+[debug] [2023-09-29T18:16:13.444Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/rusty-sand 200
+[debug] [2023-09-29T18:16:13.444Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/rusty-sand {"projectId":"rusty-sand","projectNumber":"28122441208","displayName":"Rusty sand","name":"projects/rusty-sand","resources":{"hostingSite":"rusty-sand"},"state":"ACTIVE","etag":"1_51a8b9f6-8d50-4043-b4bc-10b102d4a7c5"}
+[info] 
+[info] === Deploying to 'rusty-sand'...
+[info] 
+[info] i  deploying hosting 
+[debug] [2023-09-29T18:16:13.448Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/rusty-sand/versions [none]
+[debug] [2023-09-29T18:16:13.448Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/rusty-sand/versions {"status":"CREATED","labels":{"deployment-tool":"cli-firebase"}}

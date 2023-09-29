@@ -81,7 +81,9 @@ pub mod lib {
                 .add_systems(Update, spawn_cell_type)
                 .add_systems(Update, my_cursor_system)
                 .add_systems(Update, (spawn_cell_on_click, spawn_cell_on_touch))
-                .add_plugins(WorldInspectorPlugin::new());
+                .add_plugins(WorldInspectorPlugin::new())
+                .add_systems(Update, physics)
+                .add_systems(Update, move_camera);
         }
     }
 
@@ -196,7 +198,7 @@ pub mod lib {
         query: Query<&CellTypeToSpawn>,
         cell_pos_query: Query<&Transform, With<Cell>>,
     ) {
-        if buttons.just_released(MouseButton::Left) {
+        if buttons.pressed(MouseButton::Left) {
             let mut new_cursor_position = cursor_positions.single().pos;
             new_cursor_position.x -= (new_cursor_position.x as i32 % CELL_SIZE.x as i32) as f32;
             new_cursor_position.y -= (new_cursor_position.y as i32 % CELL_SIZE.x as i32) as f32;
@@ -212,7 +214,7 @@ pub mod lib {
                 materials,
                 new_cursor_position.extend(0f32),
                 query.single().type_to_select,
-                cell_pos_query
+                cell_pos_query,
             );
         }
     }
@@ -229,20 +231,20 @@ pub mod lib {
     ) {
         for finger in touches.iter() {
             if touches.just_pressed(finger.id()) {
-                    let touch_position = finger.position().clone();
-                    let mut new_touch_position = screen_to_world(touch_position, windows, camera_q);
-                    new_touch_position.x -= (new_touch_position.x as i32 % CELL_SIZE.x as i32) as f32;
-                    new_touch_position.y -= (new_touch_position.y as i32 % CELL_SIZE.x as i32) as f32;
+                let touch_position = finger.position().clone();
+                let mut new_touch_position = screen_to_world(touch_position, windows, camera_q);
+                new_touch_position.x -= (new_touch_position.x as i32 % CELL_SIZE.x as i32) as f32;
+                new_touch_position.y -= -(new_touch_position.y as i32 % CELL_SIZE.x as i32) as f32;
 
-                    spawn_cell(
-                        commands,
-                        meshes,
-                        materials,
-                        new_touch_position,
-                        query.single().type_to_select,
-                        cell_pos_query,
-                    );
-                    return;
+                spawn_cell(
+                    commands,
+                    meshes,
+                    materials,
+                    new_touch_position,
+                    query.single().type_to_select,
+                    cell_pos_query,
+                );
+                return;
             }
         }
     }
@@ -253,20 +255,21 @@ pub mod lib {
         cameras: Query<(&Transform, &Camera), With<MainCamera>>,
     ) -> Vec3 {
         let window = windows_query.iter().next().unwrap();
-        
+
         // For the purpose of this example, we assume there's one main camera.
         // Adjust as necessary for your setup.
         let (camera_transform, camera) = cameras.iter().next().unwrap();
-    
+
         // Screen to NDC
         let ndc = Vec3::new(
             (touch_position.x / window.width() as f32) * 2.0 - 1.0,
             (touch_position.y / window.height() as f32) * 2.0 - 1.0,
             0.5, // Middle of the near/far plane
         );
-    
+
         // NDC to world space
-        let world_position = camera.projection_matrix().inverse() * Vec4::new(ndc.x, ndc.y, ndc.z, 1.0);
+        let world_position =
+            camera.projection_matrix().inverse() * Vec4::new(ndc.x, ndc.y, ndc.z, 1.0);
 
         (camera_transform.compute_matrix() * world_position).truncate()
     }
@@ -301,4 +304,70 @@ pub mod lib {
             },
         ));
     }
+
+    fn physics(mut cells_query: Query<(Entity, &mut Cell, &mut Transform)>) {
+        let entities: Vec<Entity> = cells_query.iter_mut().map(|(ent, _, _)| ent).collect();
+        
+        let mut to_move = Vec::new(); // Vec to track which entities need to be moved
+    
+        for i in 0..entities.len() {
+            if let Ok((_, cell, transform)) = &cells_query.get(entities[i]) { // Note: not getting mutably here
+                match cell.cell_type {
+                    CellType::Sand => {
+                        let mut stop = false;
+    
+                        for i2 in 0..entities.len() {
+                            if let Ok((_, cell2, transform2)) = cells_query.get(entities[i2]) { // Note: not getting mutably here
+                                if  transform2.translation == transform.translation+(Vec3 {x: 0f32, y: -10f32, z: 0f32}) {
+                                    stop = true;
+                                    break;
+                                }
+                            }
+                        }
+    
+                        if !stop {
+                            to_move.push(entities[i]); // If it should move, save the entity for the next phase
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+    
+        // Phase 2: Mutate the transforms
+        for entity in to_move {
+            if let Ok((_, _, mut transform)) = cells_query.get_mut(entity) {
+                transform.translation.y -= 2f32;
+            }
+        }
+    }
+
+    fn move_camera(
+        mut camera_q: Query<&mut Transform, With<MainCamera>>,
+        keys: Res<Input<KeyCode>>,
+        time: Res<Time>,
+    ) {
+        let mut camera_transform = camera_q.single_mut();
+        let mut move_dir = Vec2::new(0f32, 0f32);
+        let speed = 250;
+        if keys.pressed(KeyCode::W) {
+            move_dir.y=1f32;
+            println!("moving up")
+        }
+        if keys.pressed(KeyCode::S) {
+            move_dir.y-=1f32;
+            println!("moving down")
+        }
+        if keys.pressed(KeyCode::A) {
+            move_dir.x-=1f32;
+            println!("moving left")
+        }
+        if keys.pressed(KeyCode::D) {
+            move_dir.x+=1f32;
+            println!("moving right")
+        }
+
+        camera_transform.translation+=(move_dir*speed as f32*time.delta_seconds()).extend(0f32);
+    }
+    
 }
