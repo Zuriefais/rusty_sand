@@ -4,12 +4,15 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = {version = "0.11.2", features = ["multi-threaded"]}
-bevy-inspector-egui = "0.19.0"
+bevy = {version = "0.12", features = ["multi-threaded", "trace"]}
+bevy-inspector-egui = "0.21.0"
+bevy_mod_debugdump = "0.9.0"
+bytemuck = "1.14.0"
 fastrand = "2.0.0"
+grid = "0.11.0"
 image = "0.24.7"
 lazy_static = "1.4.0"
-winit = "0.28.6"
+winit = "0.29.3"
 
 [dependencies.bevy_egui]
 version = "*"
@@ -17,10 +20,10 @@ default-features = false
 features = ["default_fonts"]
 
 [target.'cfg(target_os = "linux")'.dependencies]
-bevy = {version = "0.11.3", features = ["multi-threaded", "dynamic_linking"]}
+bevy = {version = "0.12", features = ["multi-threaded", "dynamic_linking", "trace"]}
 
 [target.'cfg(not(target_os = "linux"))'.dependencies]
-bevy = {version = "0.11.3", features = ["multi-threaded"]}
+bevy = {version = "0.12", features = ["multi-threaded", "trace"]}
 
 [toolchain]
 channel = "nightly"
@@ -50,3 +53,6 @@ target_sdk_version = 33
 [package.metadata.android.application]
 #icon = "@mipmap/ic_launcher"
 label = "Rusty sand"
+
+[build]
+rustflags = ["-Z", "threads=X"]

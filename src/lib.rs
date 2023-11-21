@@ -1,5 +1,6 @@
 pub mod setup;
 pub mod lib {
+    use bevy::log::LogPlugin;
     use bevy::prelude::*;
     use bevy::sprite::MaterialMesh2dBundle;
     use bevy::utils::HashMap;
@@ -8,7 +9,11 @@ pub mod lib {
     use bevy::DefaultPlugins;
     use bevy_egui::{egui, EguiContexts, EguiPlugin};
     use bevy_inspector_egui::quick::WorldInspectorPlugin;
+    use grid::*;
+    use lazy_static::lazy_static;
     use winit::window::Icon;
+    use winit::window::Icon as WinitIcon;
+
 
     #[derive(Component)]
     pub struct Cell {
@@ -22,8 +27,6 @@ pub mod lib {
 
     #[derive(Component)]
     pub struct MainCamera;
-
-    use lazy_static::lazy_static;
 
     lazy_static! {
         static ref CELL_COLOR: HashMap<CellType, bevy::render::color::Color> = {
@@ -57,8 +60,24 @@ pub mod lib {
         pub type_to_select: CellType,
     }
 
-    #[derive(Component)]
-    pub struct World {}
+    #[derive(Resource)]
+    pub struct World {
+        pub grid: Grid<Entity>,
+        pub cell_size: Vec3
+    }
+
+    impl World {
+        pub fn default() -> World {
+            World {
+                grid: grid![],
+                cell_size: Vec3 {
+                    x: 10f32,
+                    y: 10f32,
+                    z: 10f32,
+                },
+            }
+        }
+    }
 
     pub struct SetupPlugin;
 
@@ -67,21 +86,25 @@ pub mod lib {
             app.add_systems(Startup, set_window_icon)
                 .add_systems(Startup, setup)
                 .insert_resource(ClearColor(Color::rgb(0.0, 0.170, 0.253)))
-                .add_plugins(DefaultPlugins.set(WindowPlugin {
-                    primary_window: Some(Window {
-                        title: "rusty sand".into(),
-                        resolution: (500., 300.).into(),
-                        present_mode: PresentMode::AutoVsync,
-                        fit_canvas_to_parent: true,
-                        ..default()
-                    }),
-                    ..default()
-                }))
+                .add_plugins(
+                    DefaultPlugins
+                        .set(WindowPlugin {
+                            primary_window: Some(Window {
+                                title: "rusty sand".into(),
+                                resolution: (500., 300.).into(),
+                                present_mode: PresentMode::AutoVsync,
+                                fit_canvas_to_parent: true,
+                                ..default()
+                            }),
+                            ..default()
+                        })
+                        .disable::<LogPlugin>(),
+                )
                 .add_plugins(EguiPlugin)
                 .add_systems(Update, spawn_cell_type)
                 .add_systems(Update, my_cursor_system)
-                .add_systems(Update, (spawn_cell_on_click, spawn_cell_on_touch))
-                .add_plugins(WorldInspectorPlugin::new())
+                .add_systems(Update, spawn_cell_on_click)
+                //.add_plugins(WorldInspectorPlugin::new())
                 .add_systems(Update, physics)
                 .add_systems(Update, move_camera);
         }
@@ -95,7 +118,7 @@ pub mod lib {
         let Some(primary) = windows.get_window(main_window.single()) else {
             return;
         };
-
+    
         let (icon_rgba, icon_width, icon_height) = {
             let image = image::open("icon.ico")
                 .expect("Failed to open icon path")
@@ -104,10 +127,11 @@ pub mod lib {
             let rgba = image.into_raw();
             (rgba, width, height)
         };
-
-        let icon = Icon::from_rgba(icon_rgba, icon_width, icon_height).unwrap();
-        primary.set_window_icon(Some(icon));
+    
+        let icon = WinitIcon::from_rgba(icon_rgba, icon_width, icon_height).unwrap();
+        //primary.set_window_icon(Some(icon));
     }
+    
 
     #[cfg(target_arch = "wasm32")]
     pub fn set_window_icon() {}
@@ -131,6 +155,7 @@ pub mod lib {
         mut meshes: ResMut<Assets<Mesh>>,
         mut materials: ResMut<Assets<ColorMaterial>>,
     ) {
+        let mesh = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
         commands.spawn(CursorPosition {
             pos: Vec2 { x: 0f32, y: 0f32 },
         });
@@ -307,24 +332,33 @@ pub mod lib {
 
     fn physics(mut cells_query: Query<(Entity, &mut Cell, &mut Transform)>) {
         let entities: Vec<Entity> = cells_query.iter_mut().map(|(ent, _, _)| ent).collect();
-        
+
         let mut to_move = Vec::new(); // Vec to track which entities need to be moved
-    
+
         for i in 0..entities.len() {
-            if let Ok((_, cell, transform)) = &cells_query.get(entities[i]) { // Note: not getting mutably here
+            if let Ok((_, cell, transform)) = &cells_query.get(entities[i]) {
+                // Note: not getting mutably here
                 match cell.cell_type {
                     CellType::Sand => {
                         let mut stop = false;
-    
+
                         for i2 in 0..entities.len() {
-                            if let Ok((_, cell2, transform2)) = cells_query.get(entities[i2]) { // Note: not getting mutably here
-                                if  transform2.translation == transform.translation+(Vec3 {x: 0f32, y: -10f32, z: 0f32}) {
+                            if let Ok((_, cell2, transform2)) = cells_query.get(entities[i2]) {
+                                // Note: not getting mutably here
+                                if transform2.translation
+                                    == transform.translation
+                                        + (Vec3 {
+                                            x: 0f32,
+                                            y: -10f32,
+                                            z: 0f32,
+                                        })
+                                {
                                     stop = true;
                                     break;
                                 }
                             }
                         }
-    
+
                         if !stop {
                             to_move.push(entities[i]); // If it should move, save the entity for the next phase
                         }
@@ -333,7 +367,7 @@ pub mod lib {
                 }
             }
         }
-    
+
         // Phase 2: Mutate the transforms
         for entity in to_move {
             if let Ok((_, _, mut transform)) = cells_query.get_mut(entity) {
@@ -351,23 +385,23 @@ pub mod lib {
         let mut move_dir = Vec2::new(0f32, 0f32);
         let speed = 250;
         if keys.pressed(KeyCode::W) {
-            move_dir.y=1f32;
+            move_dir.y = 1f32;
             println!("moving up")
         }
         if keys.pressed(KeyCode::S) {
-            move_dir.y-=1f32;
+            move_dir.y -= 1f32;
             println!("moving down")
         }
         if keys.pressed(KeyCode::A) {
-            move_dir.x-=1f32;
+            move_dir.x -= 1f32;
             println!("moving left")
         }
         if keys.pressed(KeyCode::D) {
-            move_dir.x+=1f32;
+            move_dir.x += 1f32;
             println!("moving right")
         }
 
-        camera_transform.translation+=(move_dir*speed as f32*time.delta_seconds()).extend(0f32);
+        camera_transform.translation +=
+            (move_dir * speed as f32 * time.delta_seconds()).extend(0f32);
     }
-    
 }
