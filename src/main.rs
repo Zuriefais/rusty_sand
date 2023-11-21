@@ -1,7 +1,16 @@
+// main.rs or lib.rs
+mod components;
+mod enums;
+mod resources;
+mod setup;
+mod systems;
+mod utils;
+
+extern crate grid;
+
 use bevy::prelude::*;
-use rusty_sand::lib::SetupPlugin;
+use setup::SetupPlugin;
 
 fn main() {
     App::new().add_plugins(SetupPlugin).run();
-    
 }
