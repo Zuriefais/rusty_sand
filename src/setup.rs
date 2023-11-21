@@ -2,6 +2,7 @@
 use crate::{
     components::{CellTypeToSpawn, CursorPosition, MainCamera},
     enums::CellType,
+    resources::CellWorld,
     systems::{
         move_camera, my_cursor_system, physics, set_window_icon, spawn_cell_on_click,
         spawn_cell_type,
@@ -9,6 +10,7 @@ use crate::{
 };
 use bevy::{log::LogPlugin, prelude::*, window::PresentMode};
 use bevy_egui::EguiPlugin;
+use bevy_fps_counter::FpsCounterPlugin;
 
 pub struct SetupPlugin;
 
@@ -37,16 +39,15 @@ impl Plugin for SetupPlugin {
             .add_systems(Update, spawn_cell_on_click)
             //.add_plugins(WorldInspectorPlugin::new())
             .add_systems(Update, physics)
-            .add_systems(Update, move_camera);
+            .add_systems(Update, move_camera)
+            .insert_resource(CellWorld::default())
+            .add_plugins(FpsCounterPlugin);
     }
 }
 
 fn setup(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    let mesh = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
     commands.spawn(CursorPosition {
         pos: Vec2 { x: 0f32, y: 0f32 },
     });

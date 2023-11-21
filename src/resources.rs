@@ -3,14 +3,14 @@ use crate::grid::*;
 use bevy::prelude::*;
 
 #[derive(Resource)]
-pub struct World {
+pub struct CellWorld {
     pub grid: Grid<Entity>,
     pub cell_size: Vec3,
 }
 
-impl World {
+impl CellWorld {
     pub fn default() -> Self {
-        World {
+        CellWorld {
             grid: grid![],
             cell_size: Vec3::new(10.0, 10.0, 10.0),
         }
