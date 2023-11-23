@@ -2,7 +2,7 @@
 use crate::{
     components::{CellTypeToSpawn, CursorPosition, MainCamera},
     enums::CellType,
-    resources::{CellWorld, SandMaterials, CellMesh, self},
+    resources::{CellWorld, SandMaterials, CellMesh},
     systems::{
         move_camera, my_cursor_system, physics, set_window_icon, spawn_cell_on_click,
         spawn_cell_on_touch, spawn_cell_type,
@@ -46,7 +46,7 @@ impl Plugin for SetupPlugin {
     }
 }
 
-fn setup(mut commands: Commands, materials: ResMut<Assets<ColorMaterial>>, mut meshes: ResMut<Assets<Mesh>>,) {
+fn setup(mut commands: Commands, materials: ResMut<Assets<ColorMaterial>>, meshes: ResMut<Assets<Mesh>>,) {
     commands.spawn(CursorPosition {
         pos: Vec2 { x: 0f32, y: 0f32 },
     });

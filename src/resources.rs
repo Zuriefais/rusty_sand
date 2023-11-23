@@ -1,6 +1,6 @@
 // resources.rs
 use crate::{
-    enums::{CellType, CELL_COLOR, CELL_SIZE},
+    enums::{CellType, CELL_COLOR},
     grid::*,
 };
 use bevy::{prelude::*, utils::HashMap, sprite::Mesh2dHandle};
@@ -41,7 +41,7 @@ impl SandMaterials {
             color_ids,
         };
 
-        return sand_materials_resource;
+        sand_materials_resource
     }
 }
 
@@ -54,6 +54,6 @@ impl CellMesh {
     pub fn from_world(mut meshes: ResMut<Assets<Mesh>>,) -> Self {
         let mesh = meshes.add(Mesh::from(shape::Quad::default())).into();
 
-        return CellMesh { mesh };
+        CellMesh { mesh }
     }
 }

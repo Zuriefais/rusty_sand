@@ -1,6 +1,6 @@
 // systems.rs
 use crate::components::{Cell, CellTypeToSpawn, CursorPosition, MainCamera};
-use crate::enums::{CellType, CELL_COLOR, CELL_SIZE};
+use crate::enums::{CellType, CELL_SIZE};
 use crate::resources::{SandMaterials, CellMesh};
 use crate::utils::screen_to_world;
 use bevy::prelude::*;
@@ -10,8 +10,8 @@ use bevy_egui::{egui, EguiContexts};
 // Add your systems like set_window_icon, setup, spawn_cell_type, etc.
 #[cfg(not(target_arch = "wasm32"))]
 pub fn set_window_icon(
-    main_window: Query<Entity, With<bevy::window::PrimaryWindow>>,
-    windows: NonSend<bevy::winit::WinitWindows>,
+    _main_window: Query<Entity, With<bevy::window::PrimaryWindow>>,
+    _windows: NonSend<bevy::winit::WinitWindows>,
 ) {
 
     //let Some(_primary) = windows.get_window(main_window.single()) else {
@@ -44,7 +44,7 @@ pub fn spawn_cell_type(mut contexts: EguiContexts, mut query: Query<&mut CellTyp
                 ui.selectable_value(&mut selected, &CellType::Stone, "Stone");
             });
     });
-    query.single_mut().type_to_select = selected.clone();
+    query.single_mut().type_to_select = *selected;
     // Use `ui.enum_select` to create the dropdown menu.
 }
 
@@ -118,7 +118,7 @@ pub fn spawn_cell_on_touch(
 ) {
     for finger in touches.iter() {
         if touches.just_pressed(finger.id()) {
-            let touch_position = finger.position().clone();
+            let touch_position = finger.position();
             let mut new_touch_position = screen_to_world(touch_position, windows, camera_q);
             new_touch_position.x -= (new_touch_position.x as i32 % CELL_SIZE.x as i32) as f32;
             new_touch_position.y -= -(new_touch_position.y as i32 % CELL_SIZE.x as i32) as f32;
@@ -139,7 +139,7 @@ pub fn spawn_cell_on_touch(
 
 pub fn spawn_cell(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
+    _meshes: ResMut<Assets<Mesh>>,
     materials: Res<SandMaterials>,
     cell_mesh: Res<CellMesh>,
     pos: Vec3,
@@ -169,7 +169,7 @@ pub fn spawn_cell(
                     ..Default::default()
                 },
                 Cell {
-                    cell_type: cell_type,
+                    cell_type,
                 },
             ));
         } else {
@@ -196,7 +196,7 @@ pub fn physics(mut cells_query: Query<(Entity, &mut Cell, &mut Transform)>) {
                     let mut stop = false;
 
                     for i2 in 0..entities.len() {
-                        if let Ok((_, cell2, transform2)) = cells_query.get(entities[i2]) {
+                        if let Ok((_, _cell2, transform2)) = cells_query.get(entities[i2]) {
                             // Note: not getting mutably here
                             if transform2.translation
                                 == transform.translation

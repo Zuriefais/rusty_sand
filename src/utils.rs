@@ -18,8 +18,8 @@ pub fn screen_to_world(
 
     // Screen to NDC
     let ndc = Vec3::new(
-        (touch_position.x / window.width() as f32) * 2.0 - 1.0,
-        (touch_position.y / window.height() as f32) * 2.0 - 1.0,
+        (touch_position.x / window.width()) * 2.0 - 1.0,
+        (touch_position.y / window.height()) * 2.0 - 1.0,
         0.5, // Middle of the near/far plane
     );
 
