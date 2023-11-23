@@ -3,7 +3,7 @@ use crate::{
     enums::{CellType, CELL_COLOR},
     grid::*,
 };
-use bevy::{prelude::*, utils::HashMap, sprite::Mesh2dHandle};
+use bevy::{prelude::*, sprite::Mesh2dHandle, utils::HashMap};
 use strum::IntoEnumIterator;
 
 #[derive(Resource)]
@@ -28,7 +28,7 @@ pub struct SandMaterials {
 }
 
 impl SandMaterials {
-    pub fn from_world(mut materials: ResMut<Assets<ColorMaterial>>,) -> Self {
+    pub fn from_world(mut materials: ResMut<Assets<ColorMaterial>>) -> Self {
         let mut sand_materials: Vec<Handle<ColorMaterial>> = vec![];
         let mut color_ids: HashMap<CellType, usize> = HashMap::new();
 
@@ -51,7 +51,7 @@ pub struct CellMesh {
 }
 
 impl CellMesh {
-    pub fn from_world(mut meshes: ResMut<Assets<Mesh>>,) -> Self {
+    pub fn from_world(mut meshes: ResMut<Assets<Mesh>>) -> Self {
         let mesh = meshes.add(Mesh::from(shape::Quad::default())).into();
 
         CellMesh { mesh }

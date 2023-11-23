@@ -2,10 +2,12 @@
 use crate::{
     components::{CellTypeToSpawn, CursorPosition, MainCamera},
     enums::CellType,
-    resources::{CellWorld, SandMaterials, CellMesh},
+    resources::{CellMesh, CellWorld, SandMaterials},
     systems::{
-        move_camera, my_cursor_system, physics, set_window_icon, spawn_cell_on_click,
-        spawn_cell_on_touch, spawn_cell_type,
+        camera_movement::move_camera,
+        cell_management::{physics, spawn_cell_on_click, spawn_cell_on_touch},
+        ui_systems::{my_cursor_system, spawn_cell_type},
+        window_management::set_window_icon,
     },
 };
 use bevy::{log::LogPlugin, prelude::*, window::PresentMode};
@@ -46,7 +48,11 @@ impl Plugin for SetupPlugin {
     }
 }
 
-fn setup(mut commands: Commands, materials: ResMut<Assets<ColorMaterial>>, meshes: ResMut<Assets<Mesh>>,) {
+fn setup(
+    mut commands: Commands,
+    materials: ResMut<Assets<ColorMaterial>>,
+    meshes: ResMut<Assets<Mesh>>,
+) {
     commands.spawn(CursorPosition {
         pos: Vec2 { x: 0f32, y: 0f32 },
     });
