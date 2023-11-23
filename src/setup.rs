@@ -2,10 +2,10 @@
 use crate::{
     components::{CellTypeToSpawn, CursorPosition, MainCamera},
     enums::CellType,
-    resources::CellWorld,
+    resources::{CellWorld, SandMaterials, CellMesh, self},
     systems::{
         move_camera, my_cursor_system, physics, set_window_icon, spawn_cell_on_click,
-        spawn_cell_type,
+        spawn_cell_on_touch, spawn_cell_type,
     },
 };
 use bevy::{log::LogPlugin, prelude::*, window::PresentMode};
@@ -41,13 +41,12 @@ impl Plugin for SetupPlugin {
             .add_systems(Update, physics)
             .add_systems(Update, move_camera)
             .insert_resource(CellWorld::default())
-            .add_plugins(FpsCounterPlugin);
+            .add_plugins(FpsCounterPlugin)
+            .add_systems(Update, spawn_cell_on_touch);
     }
 }
 
-fn setup(
-    mut commands: Commands,
-) {
+fn setup(mut commands: Commands, materials: ResMut<Assets<ColorMaterial>>, mut meshes: ResMut<Assets<Mesh>>,) {
     commands.spawn(CursorPosition {
         pos: Vec2 { x: 0f32, y: 0f32 },
     });
@@ -55,4 +54,7 @@ fn setup(
         type_to_select: CellType::Sand,
     });
     commands.spawn((Camera2dBundle::default(), MainCamera));
+
+    commands.insert_resource(SandMaterials::from_world(materials));
+    commands.insert_resource(CellMesh::from_world(meshes));
 }

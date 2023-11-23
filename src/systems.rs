@@ -1,6 +1,7 @@
 // systems.rs
 use crate::components::{Cell, CellTypeToSpawn, CursorPosition, MainCamera};
 use crate::enums::{CellType, CELL_COLOR, CELL_SIZE};
+use crate::resources::{SandMaterials, CellMesh};
 use crate::utils::screen_to_world;
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
@@ -75,11 +76,12 @@ pub fn my_cursor_system(
 pub fn spawn_cell_on_click(
     commands: Commands,
     meshes: ResMut<Assets<Mesh>>,
-    materials: ResMut<Assets<ColorMaterial>>,
+    materials: Res<SandMaterials>,
     buttons: Res<Input<MouseButton>>,
     cursor_positions: Query<&mut CursorPosition>,
     query: Query<&CellTypeToSpawn>,
     cell_pos_query: Query<&Transform, With<Cell>>,
+    cell_mesh: Res<CellMesh>,
 ) {
     if buttons.pressed(MouseButton::Left) {
         let mut new_cursor_position = cursor_positions.single().pos;
@@ -95,6 +97,7 @@ pub fn spawn_cell_on_click(
             commands,
             meshes,
             materials,
+            cell_mesh,
             new_cursor_position.extend(0f32),
             query.single().type_to_select,
             cell_pos_query,
@@ -105,12 +108,13 @@ pub fn spawn_cell_on_click(
 pub fn spawn_cell_on_touch(
     commands: Commands,
     meshes: ResMut<Assets<Mesh>>,
-    materials: ResMut<Assets<ColorMaterial>>,
+    materials: Res<SandMaterials>,
     query: Query<&CellTypeToSpawn>,
     cell_pos_query: Query<&Transform, With<Cell>>,
     touches: Res<Touches>,
     windows: Query<&Window>,
     camera_q: Query<(&Transform, &Camera), With<MainCamera>>,
+    cell_mesh: Res<CellMesh>,
 ) {
     for finger in touches.iter() {
         if touches.just_pressed(finger.id()) {
@@ -123,6 +127,7 @@ pub fn spawn_cell_on_touch(
                 commands,
                 meshes,
                 materials,
+                cell_mesh,
                 new_touch_position,
                 query.single().type_to_select,
                 cell_pos_query,
@@ -135,33 +140,48 @@ pub fn spawn_cell_on_touch(
 pub fn spawn_cell(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    materials: Res<SandMaterials>,
+    cell_mesh: Res<CellMesh>,
     pos: Vec3,
     cell_type: CellType,
     cell_pos_query: Query<&Transform, With<Cell>>,
 ) {
+    // Check if a cell already exists at the position
     for cell_pos in &cell_pos_query {
         if cell_pos.translation == pos {
             return;
         }
     }
 
-    commands.spawn((
-        MaterialMesh2dBundle {
-            mesh: meshes.add(Mesh::from(shape::Quad::default())).into(),
-            transform: Transform {
-                translation: pos,
-                scale: CELL_SIZE,
-                ..Default::default()
-            },
-            material: materials.add(ColorMaterial::from(CELL_COLOR[&cell_type])),
-            ..default()
-        },
-        Cell {
-            cell_type: cell_type,
-        },
-    ));
+    // Get the material index for the given cell type
+    if let Some(&material_index) = materials.color_ids.get(&cell_type) {
+        // Access the material using the material index
+        if let Some(material) = materials.materials.get(material_index) {
+            commands.spawn((
+                MaterialMesh2dBundle {
+                    mesh: cell_mesh.mesh.clone(),
+                    transform: Transform {
+                        translation: pos,
+                        scale: CELL_SIZE,
+                        ..Default::default()
+                    },
+                    material: material.clone(),
+                    ..Default::default()
+                },
+                Cell {
+                    cell_type: cell_type,
+                },
+            ));
+        } else {
+            // Handle the case where the material is not found
+            warn!("Material for cell type {:?} not found", cell_type);
+        }
+    } else {
+        // Handle the case where the material index is not found
+        warn!("No material index for cell type {:?}", cell_type);
+    }
 }
+
 
 pub fn physics(mut cells_query: Query<(Entity, &mut Cell, &mut Transform)>) {
     let entities: Vec<Entity> = cells_query.iter_mut().map(|(ent, _, _)| ent).collect();
