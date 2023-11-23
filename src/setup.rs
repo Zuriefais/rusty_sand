@@ -4,7 +4,7 @@ use crate::{
     enums::CellType,
     resources::{CellMesh, CellWorld, SandMaterials},
     systems::{
-        camera_movement::move_camera,
+        camera::{move_camera, zoom_camera},
         cell_management::{physics, spawn_cell_on_click, spawn_cell_on_touch},
         ui_systems::{my_cursor_system, spawn_cell_type},
         window_management::set_window_icon,
@@ -44,7 +44,8 @@ impl Plugin for SetupPlugin {
             .add_systems(Update, move_camera)
             .insert_resource(CellWorld::default())
             .add_plugins(FpsCounterPlugin)
-            .add_systems(Update, spawn_cell_on_touch);
+            .add_systems(Update, spawn_cell_on_touch)
+            .add_systems(Update, zoom_camera);
     }
 }
 
