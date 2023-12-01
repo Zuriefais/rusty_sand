@@ -1,8 +1,7 @@
 // enums.rs
 use bevy::{prelude::*, utils::hashbrown::HashMap};
 use lazy_static::lazy_static;
-use strum_macros::EnumIter; // 0.17.1
-                            // 0.17.1
+use strum_macros::EnumIter;
 
 #[derive(Eq, PartialEq, Hash, Debug, Clone, Copy, EnumIter)]
 pub enum CellType {

@@ -1,23 +1,72 @@
 // resources.rs
 use crate::{
-    enums::{CellType, CELL_COLOR},
+    enums::{CellType, CELL_COLOR, CELL_SIZE},
     grid::*,
 };
-use bevy::{prelude::*, sprite::Mesh2dHandle, utils::HashMap};
+use bevy::{
+    prelude::*,
+    sprite::Mesh2dHandle,
+    utils::HashMap,
+};
+use bevy_inspector_egui::InspectorOptions;
 use strum::IntoEnumIterator;
+
+#[derive(Resource, Reflect, InspectorOptions, Default)]
+pub struct HandleInputOnMouse {
+    pub handle: bool,
+}
+
+impl HandleInputOnMouse {
+    pub fn default() -> Self {
+        HandleInputOnMouse { handle: true }
+    }
+}
 
 #[derive(Resource)]
 pub struct CellWorld {
-    pub grid: Grid<Entity>,
-    pub cell_size: Vec3,
+    pub grid: Grid<Option<Entity>>,
+    pub cell_count: i32,
 }
 
 impl CellWorld {
     pub fn default() -> Self {
         CellWorld {
             grid: grid![],
-            cell_size: Vec3::new(10.0, 10.0, 10.0),
+            cell_count: 0,
         }
+    }
+
+    pub fn insert(&mut self, x: usize, y: usize, entity: Entity) {
+        if let Some(cell) = self.grid.get_mut(x, y) {
+            *cell = Some(entity);
+        }
+    }
+
+    pub fn insert_if_empty(&mut self, x: usize, y: usize, entity: Entity) {
+        if let Some(cell) = self.grid.get_mut(x, y) {
+            // Only insert the entity if the cell is empty (None)
+            if cell.is_none() {
+                *cell = Some(entity);
+                self.cell_count+=1;
+                info!("cell count {}", self.cell_count)
+            }
+        }
+    }
+
+    pub fn insert_by_pos_if_empty(&mut self, pos: Vec2, entity: Entity) {
+        // Convert the Vec2 position to grid coordinates
+        let x = (pos.x / CELL_SIZE.x as f32).floor() as usize;
+        let y = (pos.y / CELL_SIZE.x as f32).floor() as usize;
+    
+        // Insert the entity into the grid
+        self.insert_if_empty(x, y, entity);
+        self.cell_count+=1;
+        info!("cell count {}", self.cell_count)
+    }
+    
+
+    pub fn get(&self, x: usize, y: usize) -> Option<Entity> {
+        self.grid.get(x, y).and_then(|cell| *cell)
     }
 }
 

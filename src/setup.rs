@@ -2,17 +2,18 @@
 use crate::{
     components::{CellTypeToSpawn, CursorPosition, MainCamera},
     enums::CellType,
-    resources::{CellMesh, CellWorld, SandMaterials},
+    resources::{CellMesh, CellWorld, HandleInputOnMouse, SandMaterials},
     systems::{
         camera::{move_camera, zoom_camera},
         cell_management::{physics, spawn_cell_on_click, spawn_cell_on_touch},
-        ui_systems::{my_cursor_system, spawn_cell_type},
+        ui_systems::{my_cursor_system, show_cell_count, spawn_cell_type},
         window_management::set_window_icon,
     },
 };
 use bevy::{log::LogPlugin, prelude::*, window::PresentMode};
 use bevy_egui::EguiPlugin;
 use bevy_fps_counter::FpsCounterPlugin;
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 pub struct SetupPlugin;
 
@@ -21,31 +22,29 @@ impl Plugin for SetupPlugin {
         app.add_systems(Startup, set_window_icon)
             .add_systems(Startup, setup)
             .insert_resource(ClearColor(Color::rgb(0.0, 0.170, 0.253)))
-            .add_plugins(
-                DefaultPlugins
-                    .set(WindowPlugin {
-                        primary_window: Some(Window {
-                            title: "rusty sand".into(),
-                            resolution: (500., 300.).into(),
-                            present_mode: PresentMode::AutoVsync,
-                            fit_canvas_to_parent: true,
-                            ..default()
-                        }),
-                        ..default()
-                    })
-                    .disable::<LogPlugin>(),
-            )
+            .insert_resource(HandleInputOnMouse::default())
+            .add_plugins(DefaultPlugins.set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "rusty sand".into(),
+                    resolution: (500., 300.).into(),
+                    present_mode: PresentMode::AutoVsync,
+                    fit_canvas_to_parent: true,
+                    ..default()
+                }),
+                ..default()
+            }))
             .add_plugins(EguiPlugin)
             .add_systems(Update, spawn_cell_type)
             .add_systems(Update, my_cursor_system)
             .add_systems(Update, spawn_cell_on_click)
-            //.add_plugins(WorldInspectorPlugin::new())
+            .add_plugins(WorldInspectorPlugin::new())
             .add_systems(Update, physics)
             .add_systems(Update, move_camera)
             .insert_resource(CellWorld::default())
             .add_plugins(FpsCounterPlugin)
             .add_systems(Update, spawn_cell_on_touch)
-            .add_systems(Update, zoom_camera);
+            .add_systems(Update, zoom_camera)
+            .add_systems(Update, show_cell_count);
     }
 }
 

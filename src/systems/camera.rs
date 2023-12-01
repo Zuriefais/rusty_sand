@@ -1,5 +1,8 @@
-use crate::{components::{MainCamera, CursorPosition}, utils::screen_to_world};
-use bevy::{prelude::*, input::mouse::{MouseWheel, MouseScrollUnit}};
+use crate::components::{CursorPosition, MainCamera};
+use bevy::{
+    input::mouse::{MouseScrollUnit, MouseWheel},
+    prelude::*,
+};
 
 pub fn move_camera(
     mut camera_q: Query<&mut Transform, With<MainCamera>>,
@@ -11,19 +14,15 @@ pub fn move_camera(
     let speed = 250;
     if keys.pressed(KeyCode::W) {
         move_dir.y = 1f32;
-        println!("moving up")
     }
     if keys.pressed(KeyCode::S) {
         move_dir.y -= 1f32;
-        println!("moving down")
     }
     if keys.pressed(KeyCode::A) {
         move_dir.x -= 1f32;
-        println!("moving left")
     }
     if keys.pressed(KeyCode::D) {
         move_dir.x += 1f32;
-        println!("moving right")
     }
 
     camera_transform.translation += (move_dir * speed as f32 * time.delta_seconds()).extend(0f32);
@@ -57,5 +56,3 @@ pub fn zoom_camera(
         }
     }
 }
-
-

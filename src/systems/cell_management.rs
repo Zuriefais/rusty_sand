@@ -1,7 +1,6 @@
 use crate::components::{Cell, CellTypeToSpawn, CursorPosition, MainCamera};
 use crate::enums::{CellType, CELL_SIZE};
-use crate::resources::{CellMesh, SandMaterials};
-use crate::utils::screen_to_world;
+use crate::resources::{CellMesh, CellWorld, SandMaterials};
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
 
@@ -11,26 +10,20 @@ pub fn spawn_cell_on_click(
     buttons: Res<Input<MouseButton>>,
     cursor_positions: Query<&mut CursorPosition>,
     query: Query<&CellTypeToSpawn>,
-    cell_pos_query: Query<&Transform, With<Cell>>,
     cell_mesh: Res<CellMesh>,
+    cell_world: ResMut<CellWorld>,
 ) {
     if buttons.pressed(MouseButton::Left) {
         let mut new_cursor_position = cursor_positions.single().pos;
         new_cursor_position.x -= (new_cursor_position.x as i32 % CELL_SIZE.x as i32) as f32;
         new_cursor_position.y -= (new_cursor_position.y as i32 % CELL_SIZE.x as i32) as f32;
-        for cell_pos in &cell_pos_query {
-            if cell_pos.translation == new_cursor_position.extend(0f32) {
-                return;
-            }
-        }
-
         spawn_cell(
             commands,
             materials,
             cell_mesh,
-            new_cursor_position.extend(0f32),
+            new_cursor_position,
             query.single().type_to_select,
-            cell_pos_query,
+            cell_world,
         );
     }
 }
@@ -39,16 +32,19 @@ pub fn spawn_cell_on_touch(
     commands: Commands,
     materials: Res<SandMaterials>,
     query: Query<&CellTypeToSpawn>,
-    cell_pos_query: Query<&Transform, With<Cell>>,
     touches: Res<Touches>,
-    windows: Query<&Window>,
-    camera_q: Query<(&Transform, &Camera), With<MainCamera>>,
+    camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     cell_mesh: Res<CellMesh>,
+    cell_world: ResMut<CellWorld>,
 ) {
+    let (camera, camera_transform) = camera_q.single();
+
     for finger in touches.iter() {
         if touches.just_pressed(finger.id()) {
             let touch_position = finger.position();
-            let mut new_touch_position = screen_to_world(touch_position, windows, camera_q);
+            let mut new_touch_position = camera
+                .viewport_to_world_2d(camera_transform, touch_position)
+                .unwrap();
             new_touch_position.x -= (new_touch_position.x as i32 % CELL_SIZE.x as i32) as f32;
             new_touch_position.y -= -(new_touch_position.y as i32 % CELL_SIZE.x as i32) as f32;
 
@@ -58,37 +54,34 @@ pub fn spawn_cell_on_touch(
                 cell_mesh,
                 new_touch_position,
                 query.single().type_to_select,
-                cell_pos_query,
+                cell_world,
             );
             return;
         }
     }
 }
 
+pub fn spawn_test() {
+    for number in 1..100 {}
+}
+
 pub fn spawn_cell(
     mut commands: Commands,
     materials: Res<SandMaterials>,
     cell_mesh: Res<CellMesh>,
-    pos: Vec3,
+    pos: Vec2,
     cell_type: CellType,
-    cell_pos_query: Query<&Transform, With<Cell>>,
+    mut cell_world: ResMut<CellWorld>,
 ) {
-    // Check if a cell already exists at the position
-    for cell_pos in &cell_pos_query {
-        if cell_pos.translation == pos {
-            return;
-        }
-    }
-
     // Get the material index for the given cell type
     if let Some(&material_index) = materials.color_ids.get(&cell_type) {
         // Access the material using the material index
         if let Some(material) = materials.materials.get(material_index) {
-            commands.spawn((
+            cell_world.insert_by_pos_if_empty(pos, commands.spawn((
                 MaterialMesh2dBundle {
                     mesh: cell_mesh.mesh.clone(),
                     transform: Transform {
-                        translation: pos,
+                        translation: pos.extend(0.0),
                         scale: CELL_SIZE,
                         ..Default::default()
                     },
@@ -96,7 +89,7 @@ pub fn spawn_cell(
                     ..Default::default()
                 },
                 Cell { cell_type },
-            ));
+            )).id());
         } else {
             // Handle the case where the material is not found
             warn!("Material for cell type {:?} not found", cell_type);
@@ -107,48 +100,29 @@ pub fn spawn_cell(
     }
 }
 
-pub fn physics(mut cells_query: Query<(Entity, &mut Cell, &mut Transform)>) {
-    let entities: Vec<Entity> = cells_query.iter_mut().map(|(ent, _, _)| ent).collect();
+pub fn physics(
+    mut cells_query: Query<(Entity, &mut Cell, &mut Transform)>,
+    mut cell_world: ResMut<CellWorld>
+) {
+    for (entity, cell, mut transform) in cells_query.iter_mut() {
+        match cell.cell_type {
+            CellType::Sand => {
+                // Calculate the grid position below the current cell
+                let below_x = (transform.translation.x / CELL_SIZE.x as f32).floor() as usize;
+                let below_y = ((transform.translation.y - CELL_SIZE.y as f32) / CELL_SIZE.y as f32).floor() as usize;
 
-    let mut to_move = Vec::new(); // Vec to track which entities need to be moved
+                // Check if the position below is empty
+                if cell_world.get(below_x, below_y).is_none() {
+                    // Move the cell down if empty
+                    transform.translation.y -= CELL_SIZE.y as f32;
 
-    for i in 0..entities.len() {
-        if let Ok((_, cell, transform)) = &cells_query.get(entities[i]) {
-            // Note: not getting mutably here
-            match cell.cell_type {
-                CellType::Sand => {
-                    let mut stop = false;
-
-                    for i2 in 0..entities.len() {
-                        if let Ok((_, _cell2, transform2)) = cells_query.get(entities[i2]) {
-                            // Note: not getting mutably here
-                            if transform2.translation
-                                == transform.translation
-                                    + (Vec3 {
-                                        x: 0f32,
-                                        y: -10f32,
-                                        z: 0f32,
-                                    })
-                            {
-                                stop = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if !stop {
-                        to_move.push(entities[i]); // If it should move, save the entity for the next phase
-                    }
+                    // Update the CellWorld grid
+                    cell_world.insert(below_x, below_y, entity);
+                    cell_world.insert(below_x, below_y + 1, Entity::from_raw(0)); // Assuming 0 is used for empty/invalid entities
                 }
-                _ => {}
             }
-        }
-    }
-
-    // Phase 2: Mutate the transforms
-    for entity in to_move {
-        if let Ok((_, _, mut transform)) = cells_query.get_mut(entity) {
-            transform.translation.y -= 2f32;
+            _ => {}
         }
     }
 }
+

@@ -5,26 +5,20 @@ use bevy::prelude::*;
 
 use crate::components::MainCamera;
 
-pub fn screen_to_world(
-    touch_position: Vec2,
-    windows_query: Query<&Window>,
-    cameras: Query<(&Transform, &Camera), With<MainCamera>>,
-) -> Vec3 {
-    let window = windows_query.iter().next().unwrap();
+pub fn get_screen_center(
+    windows: Query<&Window>,
+    camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+) -> Vec2 {
+    let window = windows.single();
+    let mut screen_center = Vec2::new(window.width() / 2.0, window.height() as f32 / 2.0);
+    let (camera, camera_transform) = camera_q.single();
 
-    // For the purpose of this example, we assume there's one main camera.
-    // Adjust as necessary for your setup.
-    let (camera_transform, camera) = cameras.iter().next().unwrap();
+    if let Some(world_position) = camera.viewport_to_world_2d(camera_transform, screen_center) {
+        screen_center = world_position;
+        screen_center.x = (screen_center.x as i32) as f32;
+        screen_center.y = (screen_center.y as i32) as f32;
+        return screen_center;
+    }
 
-    // Screen to NDC
-    let ndc = Vec3::new(
-        (touch_position.x / window.width()) * 2.0 - 1.0,
-        (touch_position.y / window.height()) * 2.0 - 1.0,
-        0.5, // Middle of the near/far plane
-    );
-
-    // NDC to world space
-    let world_position = camera.projection_matrix().inverse() * Vec4::new(ndc.x, ndc.y, ndc.z, 1.0);
-
-    (camera_transform.compute_matrix() * world_position).truncate()
+    return screen_center;
 }

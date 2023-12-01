@@ -1,5 +1,6 @@
 use crate::components::{CellTypeToSpawn, CursorPosition, MainCamera};
 use crate::enums::CellType;
+use crate::resources::CellWorld;
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 
@@ -39,5 +40,11 @@ pub fn my_cursor_system(
 
     egui::Window::new("Cursor Position").show(contexts.ctx_mut(), |ui| {
         ui.label(cursor_position.pos.to_string());
+    });
+}
+
+pub fn show_cell_count(mut contexts: EguiContexts, cell_count: ResMut<CellWorld>) {
+    egui::Window::new("Cell count").show(contexts.ctx_mut(), |ui| {
+        ui.label(cell_count.cell_count.to_string())
     });
 }

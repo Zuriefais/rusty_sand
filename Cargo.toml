@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = {version = "0.12", features = ["multi-threaded", "trace"]}
+bevy = {version = "0.12.1", features = ["multi-threaded", "trace"]}
 bevy-fps-counter = "0.3.0"
 bevy-inspector-egui = "0.21.0"
 bevy_mod_debugdump = "0.9.0"
@@ -15,7 +15,7 @@ image = "0.24.7"
 lazy_static = "1.4.0"
 strum = "0.25.0"
 strum_macros = "0.25"
-winit = "0.29.3"
+winit = "0.28.7"
 
 [dependencies.bevy_egui]
 version = "*"
@@ -27,6 +27,9 @@ bevy = {version = "0.12", features = ["multi-threaded", "dynamic_linking", "trac
 
 [target.'cfg(not(target_os = "linux"))'.dependencies]
 bevy = {version = "0.12", features = ["multi-threaded", "trace"]}
+
+[patch."https://github.com/bevyengine/bevy"]
+winit = "0.29.4"
 
 [toolchain]
 channel = "nightly"
