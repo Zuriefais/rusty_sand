@@ -2,6 +2,7 @@ use crate::components::{Cell, CursorPosition, MainCamera};
 use crate::enums::{CellType, CELL_SIZE};
 use crate::events::SpawnCellEvent;
 use crate::resources::{CellMesh, CellTypeToSpawn, CellWorld, SandMaterials};
+use crate::utils::round_pos_to_grid;
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
 
@@ -12,8 +13,7 @@ pub fn spawn_cell_on_click(
 ) {
     if buttons.pressed(MouseButton::Left) {
         let mut new_cursor_position = cursor_positions.single().pos;
-        new_cursor_position.x -= (new_cursor_position.x as i32 % CELL_SIZE.x as i32) as f32;
-        new_cursor_position.y -= (new_cursor_position.y as i32 % CELL_SIZE.x as i32) as f32;
+        new_cursor_position = round_pos_to_grid(new_cursor_position);
         ev_spawn_cell.send(SpawnCellEvent {
             pos: new_cursor_position,
         });
@@ -21,7 +21,6 @@ pub fn spawn_cell_on_click(
 }
 
 pub fn spawn_cell_on_touch(
-    commands: Commands,
     touches: Res<Touches>,
     camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     mut ev_spawn_cell: EventWriter<SpawnCellEvent>,
@@ -34,8 +33,7 @@ pub fn spawn_cell_on_touch(
             let mut new_touch_position = camera
                 .viewport_to_world_2d(camera_transform, touch_position)
                 .unwrap();
-            new_touch_position.x -= (new_touch_position.x as i32 % CELL_SIZE.x as i32) as f32;
-            new_touch_position.y -= -(new_touch_position.y as i32 % CELL_SIZE.x as i32) as f32;
+           new_touch_position = round_pos_to_grid(new_touch_position);
 
             ev_spawn_cell.send(SpawnCellEvent {
                 pos: new_touch_position,
@@ -43,10 +41,6 @@ pub fn spawn_cell_on_touch(
             return;
         }
     }
-}
-
-pub fn spawn_test() {
-    for number in 1..100 {}
 }
 
 pub fn spawn_cell(
@@ -107,14 +101,13 @@ pub fn physics(
         match cell.cell_type {
             CellType::Sand => {
                 // Calculate the grid position below the current cell
-                let below_x = (transform.translation.x / CELL_SIZE.x as f32).floor() as usize;
-                let below_y = ((transform.translation.y - CELL_SIZE.y as f32) / CELL_SIZE.y as f32)
-                    .floor() as usize;
+                let below_x = (transform.translation.x / CELL_SIZE.x).floor() as usize;
+                let below_y = ((transform.translation.y - CELL_SIZE.y) / CELL_SIZE.y).floor() as usize;
 
                 // Check if the position below is empty
                 if cell_world.get(below_x, below_y).is_none() {
                     // Move the cell down if empty
-                    transform.translation.y -= CELL_SIZE.y as f32;
+                    transform.translation.y -= CELL_SIZE.y;
 
                     // Update the CellWorld grid
                     cell_world.insert(below_x, below_y, entity);

@@ -6,7 +6,7 @@ use bevy_egui::{egui, EguiContexts};
 
 pub fn spawn_cell_type(
     mut contexts: EguiContexts,
-    mut cell_type_to_spawn: ResMut<CellTypeToSpawn>,
+    cell_type_to_spawn: ResMut<CellTypeToSpawn>,
 ) {
     egui::Window::new("cell type").show(contexts.ctx_mut(), |ui| {
         egui::ComboBox::from_label("Select one!")

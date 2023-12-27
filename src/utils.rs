@@ -10,7 +10,7 @@ pub fn get_screen_center(
     camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) -> Vec2 {
     let window = windows.single();
-    let mut screen_center = Vec2::new(window.width() / 2.0, window.height() as f32 / 2.0);
+    let mut screen_center = Vec2::new(window.width() / 2.0, window.height() / 2.0);
     let (camera, camera_transform) = camera_q.single();
 
     if let Some(world_position) = camera.viewport_to_world_2d(camera_transform, screen_center) {
@@ -20,12 +20,12 @@ pub fn get_screen_center(
         return screen_center;
     }
 
-    return screen_center;
+    screen_center
 }
 
 pub fn round_pos_to_grid(mut pos: Vec2) -> Vec2 {
-    pos.x = (pos.x / CELL_SIZE.x as f32).floor() * CELL_SIZE.x;
-    pos.y = (pos.y / CELL_SIZE.y as f32).floor() * CELL_SIZE.y;
+    pos.x = (pos.x / CELL_SIZE.x).floor() * CELL_SIZE.x;
+    pos.y = (pos.y / CELL_SIZE.y).floor() * CELL_SIZE.y;
 
     pos
 }

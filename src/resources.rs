@@ -51,8 +51,8 @@ impl CellWorld {
 
     pub fn insert_by_pos_if_empty(&mut self, pos: Vec2, entity: Entity) {
         // Convert the Vec2 position to grid coordinates
-        let x = (pos.x / CELL_SIZE.x as f32).floor() as usize;
-        let y = (pos.y / CELL_SIZE.x as f32).floor() as usize;
+        let x = (pos.x / CELL_SIZE.x).floor() as usize;
+        let y = (pos.y / CELL_SIZE.x).floor() as usize;
 
         // Insert the entity into the grid
         self.insert_if_empty(x, y, entity);
