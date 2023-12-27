@@ -3,11 +3,7 @@ use crate::{
     enums::{CellType, CELL_COLOR, CELL_SIZE},
     grid::*,
 };
-use bevy::{
-    prelude::*,
-    sprite::Mesh2dHandle,
-    utils::HashMap,
-};
+use bevy::{prelude::*, sprite::Mesh2dHandle, utils::HashMap};
 use bevy_inspector_egui::InspectorOptions;
 use strum::IntoEnumIterator;
 
@@ -47,7 +43,7 @@ impl CellWorld {
             // Only insert the entity if the cell is empty (None)
             if cell.is_none() {
                 *cell = Some(entity);
-                self.cell_count+=1;
+                self.cell_count += 1;
                 info!("cell count {}", self.cell_count)
             }
         }
@@ -57,13 +53,12 @@ impl CellWorld {
         // Convert the Vec2 position to grid coordinates
         let x = (pos.x / CELL_SIZE.x as f32).floor() as usize;
         let y = (pos.y / CELL_SIZE.x as f32).floor() as usize;
-    
+
         // Insert the entity into the grid
         self.insert_if_empty(x, y, entity);
-        self.cell_count+=1;
+        self.cell_count += 1;
         info!("cell count {}", self.cell_count)
     }
-    
 
     pub fn get(&self, x: usize, y: usize) -> Option<Entity> {
         self.grid.get(x, y).and_then(|cell| *cell)
@@ -104,5 +99,18 @@ impl CellMesh {
         let mesh = meshes.add(Mesh::from(shape::Quad::default())).into();
 
         CellMesh { mesh }
+    }
+}
+
+#[derive(Resource)]
+pub struct CellTypeToSpawn {
+    pub type_to_select: CellType,
+}
+
+impl CellTypeToSpawn {
+    pub fn default() -> Self {
+        CellTypeToSpawn {
+            type_to_select: CellType::Sand,
+        }
     }
 }

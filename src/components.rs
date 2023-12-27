@@ -14,8 +14,3 @@ pub struct CursorPosition {
 
 #[derive(Component)]
 pub struct MainCamera;
-
-#[derive(Component)]
-pub struct CellTypeToSpawn {
-    pub type_to_select: CellType,
-}

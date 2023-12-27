@@ -1,21 +1,29 @@
-use crate::components::{CellTypeToSpawn, CursorPosition, MainCamera};
+use crate::components::{CursorPosition, MainCamera};
 use crate::enums::CellType;
-use crate::resources::CellWorld;
+use crate::resources::{CellTypeToSpawn, CellWorld};
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 
-pub fn spawn_cell_type(mut contexts: EguiContexts, mut query: Query<&mut CellTypeToSpawn>) {
-    let mut selected = &query.single_mut().type_to_select.clone();
+pub fn spawn_cell_type(
+    mut contexts: EguiContexts,
+    mut cell_type_to_spawn: ResMut<CellTypeToSpawn>,
+) {
     egui::Window::new("cell type").show(contexts.ctx_mut(), |ui| {
         egui::ComboBox::from_label("Select one!")
-            .selected_text(format!("{:?}", selected))
+            .selected_text(format!("{:?}", cell_type_to_spawn.type_to_select))
             .show_ui(ui, |ui| {
-                ui.selectable_value(&mut selected, &CellType::Sand, "Sand");
-                ui.selectable_value(&mut selected, &CellType::Stone, "Stone");
+                ui.selectable_value(
+                    &mut &cell_type_to_spawn.type_to_select,
+                    &CellType::Sand,
+                    "Sand",
+                );
+                ui.selectable_value(
+                    &mut &cell_type_to_spawn.type_to_select,
+                    &CellType::Stone,
+                    "Stone",
+                );
             });
     });
-    query.single_mut().type_to_select = *selected;
-    // Use `ui.enum_select` to create the dropdown menu.
 }
 
 pub fn my_cursor_system(

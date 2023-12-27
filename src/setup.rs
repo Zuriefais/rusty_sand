@@ -1,16 +1,16 @@
 // setup.rs
 use crate::{
-    components::{CellTypeToSpawn, CursorPosition, MainCamera},
-    enums::CellType,
-    resources::{CellMesh, CellWorld, HandleInputOnMouse, SandMaterials},
+    components::{CursorPosition, MainCamera},
+    resources::{CellMesh, CellTypeToSpawn, CellWorld, HandleInputOnMouse, SandMaterials},
     systems::{
         camera::{move_camera, zoom_camera},
-        cell_management::{physics, spawn_cell_on_click, spawn_cell_on_touch},
+        cell_management::{physics, spawn_cell_on_click, spawn_cell_on_touch, spawn_cell},
         ui_systems::{my_cursor_system, show_cell_count, spawn_cell_type},
         window_management::set_window_icon,
-    },
+    }, events::SpawnCellEvent,
 };
-use bevy::{log::LogPlugin, prelude::*, window::PresentMode};
+use bevy::{prelude::*, window::PresentMode};
+
 use bevy_egui::EguiPlugin;
 use bevy_fps_counter::FpsCounterPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
@@ -41,10 +41,13 @@ impl Plugin for SetupPlugin {
             .add_systems(Update, physics)
             .add_systems(Update, move_camera)
             .insert_resource(CellWorld::default())
+            .insert_resource(CellTypeToSpawn::default())
             .add_plugins(FpsCounterPlugin)
             .add_systems(Update, spawn_cell_on_touch)
             .add_systems(Update, zoom_camera)
-            .add_systems(Update, show_cell_count);
+            .add_systems(Update, show_cell_count)
+            .add_systems(Update, spawn_cell)
+            .add_event::<SpawnCellEvent>();
     }
 }
 
@@ -55,9 +58,6 @@ fn setup(
 ) {
     commands.spawn(CursorPosition {
         pos: Vec2 { x: 0f32, y: 0f32 },
-    });
-    commands.spawn(CellTypeToSpawn {
-        type_to_select: CellType::Sand,
     });
     commands.spawn((Camera2dBundle::default(), MainCamera));
 

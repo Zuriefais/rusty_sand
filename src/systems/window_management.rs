@@ -1,7 +1,5 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 
-use crate::components::MainCamera;
-
 #[cfg(not(target_arch = "wasm32"))]
 pub fn set_window_icon(
     main_window: Query<Entity, With<bevy::window::PrimaryWindow>>,
@@ -28,7 +26,7 @@ pub fn set_window_icon(
     };
 
     let icon = Icon::from_rgba(icon_rgba, icon_width, icon_height).unwrap();
-    primary.set_window_icon(Some(icon));
+    primary.set_window_icon(Some(icon))
 }
 
 #[cfg(target_arch = "wasm32")]

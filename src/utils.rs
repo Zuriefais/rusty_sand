@@ -3,7 +3,7 @@
 
 use bevy::prelude::*;
 
-use crate::components::MainCamera;
+use crate::{components::MainCamera, enums::CELL_SIZE};
 
 pub fn get_screen_center(
     windows: Query<&Window>,
@@ -21,4 +21,11 @@ pub fn get_screen_center(
     }
 
     return screen_center;
+}
+
+pub fn round_pos_to_grid(mut pos: Vec2) -> Vec2 {
+    pos.x = (pos.x / CELL_SIZE.x as f32).floor() * CELL_SIZE.x;
+    pos.y = (pos.y / CELL_SIZE.y as f32).floor() * CELL_SIZE.y;
+
+    pos
 }

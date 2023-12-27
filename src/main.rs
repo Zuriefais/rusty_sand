@@ -1,6 +1,7 @@
 // main.rs or lib.rs
 mod components;
 mod enums;
+mod events;
 mod resources;
 mod setup;
 mod systems;
