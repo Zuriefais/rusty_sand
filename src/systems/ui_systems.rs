@@ -4,10 +4,7 @@ use crate::resources::{CellTypeToSpawn, CellWorld};
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 
-pub fn spawn_cell_type(
-    mut contexts: EguiContexts,
-    cell_type_to_spawn: ResMut<CellTypeToSpawn>,
-) {
+pub fn spawn_cell_type(mut contexts: EguiContexts, cell_type_to_spawn: ResMut<CellTypeToSpawn>) {
     egui::Window::new("cell type").show(contexts.ctx_mut(), |ui| {
         egui::ComboBox::from_label("Select one!")
             .selected_text(format!("{:?}", cell_type_to_spawn.type_to_select))

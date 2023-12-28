@@ -15,17 +15,24 @@ pub fn get_screen_center(
 
     if let Some(world_position) = camera.viewport_to_world_2d(camera_transform, screen_center) {
         screen_center = world_position;
-        screen_center.x = (screen_center.x as i32) as f32;
-        screen_center.y = (screen_center.y as i32) as f32;
+        screen_center.x = screen_center.x.floor();
+        screen_center.y = screen_center.y.floor();
         return screen_center;
     }
 
     screen_center
 }
 
-pub fn round_pos_to_grid(mut pos: Vec2) -> Vec2 {
+pub fn align_to_grid(mut pos: Vec2) -> Vec2 {
     pos.x = (pos.x / CELL_SIZE.x).floor() * CELL_SIZE.x;
     pos.y = (pos.y / CELL_SIZE.y).floor() * CELL_SIZE.y;
 
     pos
+}
+
+pub fn position_to_cell_coords(pos: Vec2) -> (usize, usize) {
+    (
+        (pos.x / CELL_SIZE.x).floor() as usize,
+        (pos.y / CELL_SIZE.y).floor() as usize,
+    )
 }

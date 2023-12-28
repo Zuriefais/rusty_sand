@@ -1,7 +1,8 @@
 // resources.rs
 use crate::{
-    enums::{CellType, CELL_COLOR, CELL_SIZE},
+    enums::{CellType, CELL_COLOR},
     grid::*,
+    utils::position_to_cell_coords,
 };
 use bevy::{prelude::*, sprite::Mesh2dHandle, utils::HashMap};
 use bevy_inspector_egui::InspectorOptions;
@@ -32,31 +33,29 @@ impl CellWorld {
         }
     }
 
-    pub fn insert(&mut self, x: usize, y: usize, entity: Entity) {
-        if let Some(cell) = self.grid.get_mut(x, y) {
+    pub fn insert(&mut self, pos: (usize, usize), entity: Entity) {
+        if let Some(cell) = self.grid.get_mut(pos.0, pos.1) {
             *cell = Some(entity);
         }
     }
 
-    pub fn insert_if_empty(&mut self, x: usize, y: usize, entity: Entity) {
-        if let Some(cell) = self.grid.get_mut(x, y) {
-            // Only insert the entity if the cell is empty (None)
-            if cell.is_none() {
-                *cell = Some(entity);
-                self.cell_count += 1;
-                info!("cell count {}", self.cell_count)
-            }
+    pub fn insert_if_empty(&mut self, pos: (usize, usize), entity: Entity) {
+        if self.is_cell_empty(pos) {
+            self.insert(pos, entity);
+            self.cell_count += 1;
+        }
+    }
+
+    pub fn is_cell_empty(&self, pos: (usize, usize)) -> bool {
+        match self.grid.get(pos.0, pos.1) {
+            Some(&Some(_)) => false, // Cell is not empty, contains an Entity
+            _ => true,               // Cell is empty (either contains None or is out of bounds)
         }
     }
 
     pub fn insert_by_pos_if_empty(&mut self, pos: Vec2, entity: Entity) {
-        // Convert the Vec2 position to grid coordinates
-        let x = (pos.x / CELL_SIZE.x).floor() as usize;
-        let y = (pos.y / CELL_SIZE.x).floor() as usize;
-
-        // Insert the entity into the grid
-        self.insert_if_empty(x, y, entity);
-        self.cell_count += 1;
+        let pos = position_to_cell_coords(pos);
+        self.insert_if_empty(pos, entity);
         info!("cell count {}", self.cell_count)
     }
 
@@ -86,6 +85,17 @@ impl SandMaterials {
         };
 
         sand_materials_resource
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::resources::CellWorld;
+
+    #[test]
+    fn if_cell_world_is_empty_fn() {
+        let cell_world = CellWorld::default();
+        assert_eq!(true, cell_world.is_cell_empty((1, 1)));
     }
 }
 
