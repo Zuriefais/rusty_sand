@@ -2,14 +2,9 @@
 use crate::enums::CellType;
 use bevy::prelude::*;
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Cell {
     pub cell_type: CellType,
-}
-
-#[derive(Component)]
-pub struct CursorPosition {
-    pub pos: Vec2,
 }
 
 #[derive(Component)]

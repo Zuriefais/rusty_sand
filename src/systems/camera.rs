@@ -1,4 +1,4 @@
-use crate::components::{CursorPosition, MainCamera};
+use crate::{components::MainCamera, resources::CursorPosition};
 use bevy::{
     input::mouse::{MouseScrollUnit, MouseWheel},
     prelude::*,
@@ -31,7 +31,7 @@ pub fn move_camera(
 pub fn zoom_camera(
     mut mouse_wheel_events: EventReader<MouseWheel>,
     mut query: Query<(&mut Transform, &mut OrthographicProjection)>,
-    mut cursor_positions: Query<&mut CursorPosition>,
+    cursor_position: Res<CursorPosition>,
 ) {
     for event in mouse_wheel_events.read() {
         let zoom_amount = match event.unit {
@@ -41,7 +41,7 @@ pub fn zoom_camera(
 
         for (mut transform, mut projection) in query.iter_mut() {
             // 1. Calculate the mouse position in world coordinates
-            let cursor_position = cursor_positions.single_mut().pos.extend(0f32);
+            let cursor_position = cursor_position.pos.extend(0f32);
 
             // 2. Calculate the direction vector from camera to mouse position
             let direction = (cursor_position - transform.translation).normalize();

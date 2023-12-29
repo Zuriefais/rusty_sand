@@ -7,6 +7,7 @@ use strum_macros::EnumIter;
 pub enum CellType {
     Sand,
     Stone,
+    BloodStone
 }
 
 pub const CELL_SIZE: Vec3 = Vec3::new(10.0, 10.0, 10.0);
@@ -21,6 +22,10 @@ lazy_static! {
         map.insert(
             CellType::Stone,
             bevy::render::color::Color::hex("4E5754").unwrap(),
+        );
+        map.insert(
+            CellType::BloodStone,
+            bevy::render::color::Color::hex("8B0000").unwrap(),
         );
         map
     };

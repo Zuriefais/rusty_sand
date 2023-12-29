@@ -1,22 +1,22 @@
-use crate::components::{Cell, CursorPosition, MainCamera};
+use crate::components::{Cell, MainCamera};
 use crate::enums::{CellType, CELL_SIZE};
 use crate::events::SpawnCellEvent;
-use crate::resources::{CellMesh, CellTypeToSpawn, CellWorld, SandMaterials, HandleInputOnMouse};
+use crate::resources::{
+    CellMesh, CellTypeToSpawn, CellWorld, CursorPosition, HandleInputOnMouse, SandMaterials,
+};
 use crate::utils::align_to_grid;
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
 
 pub fn spawn_cell_on_click(
     buttons: Res<Input<MouseButton>>,
-    cursor_positions: Query<&mut CursorPosition>,
+    cursor_position: Res<CursorPosition>,
     mut ev_spawn_cell: EventWriter<SpawnCellEvent>,
-    state: ResMut<HandleInputOnMouse>
+    state: ResMut<HandleInputOnMouse>,
 ) {
     if buttons.pressed(MouseButton::Left) && state.handle {
-        let mut new_cursor_position = cursor_positions.single().pos;
-        new_cursor_position = align_to_grid(new_cursor_position);
         ev_spawn_cell.send(SpawnCellEvent {
-            pos: new_cursor_position,
+            pos: cursor_position.pos,
         });
     }
 }

@@ -20,6 +20,17 @@ impl HandleInputOnMouse {
 }
 
 #[derive(Resource)]
+pub struct CursorPosition {
+    pub pos: Vec2,
+}
+
+impl CursorPosition {
+    pub fn default() -> Self {
+        return Self { pos: Vec2::ZERO };
+    }
+}
+
+#[derive(Resource)]
 pub struct CellWorld {
     pub grid: Grid<Option<Entity>>,
     pub cell_count: i32,
@@ -56,7 +67,7 @@ impl CellWorld {
     pub fn insert_by_pos_if_empty(&mut self, pos: Vec2, entity: Entity) {
         let pos = position_to_cell_coords(pos);
         self.insert_if_empty(pos, entity);
-        info!("cell count {}", self.cell_count)
+        info!("cell count {}, x: {}, y: {}", self.cell_count, pos.0, pos.1)
     }
 
     pub fn get(&self, x: usize, y: usize) -> Option<Entity> {
