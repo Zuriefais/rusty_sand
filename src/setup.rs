@@ -3,14 +3,14 @@ use crate::{
     components::MainCamera,
     events::SpawnCellEvent,
     resources::{
-        CellMesh, CellTypeToSpawn, CellWorld, CursorPosition, HandleInputOnMouse, SandMaterials,
+        CellMesh, CellTypeToSpawn, CellWorld, CursorPosition, EguiHoverState, SandMaterials,
     },
     systems::{
         camera::{move_camera, zoom_camera},
         cell_management::{physics, spawn_cell, spawn_cell_on_click, spawn_cell_on_touch},
-        input_handling::change_state_on_handle_input_on_mouse,
         ui_systems::{
-            check_is_empty_on_mouse_pos, my_cursor_system, show_cell_count, spawn_cell_type, cell_list_ui,
+            cell_list_ui, check_egui_hover, check_is_empty_on_mouse_pos, my_cursor_system,
+            show_cell_count, spawn_cell_type,
         },
         window_management::set_window_icon,
     },
@@ -28,7 +28,6 @@ impl Plugin for SetupPlugin {
         app.add_systems(Startup, set_window_icon)
             .add_systems(Startup, setup)
             .insert_resource(ClearColor(Color::rgb(0.0, 0.170, 0.253)))
-            .insert_resource(HandleInputOnMouse::default())
             .add_plugins(DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
                     title: "rusty sand".into(),
@@ -48,7 +47,7 @@ impl Plugin for SetupPlugin {
             .add_systems(Update, move_camera)
             .insert_resource(CellWorld::default())
             .insert_resource(CellTypeToSpawn::default())
-            .insert_resource(HandleInputOnMouse::default())
+            .insert_resource(EguiHoverState::default())
             .insert_resource(CursorPosition::default())
             .add_plugins(FpsCounterPlugin)
             .add_systems(Update, spawn_cell_on_touch)
@@ -58,9 +57,9 @@ impl Plugin for SetupPlugin {
                 Update,
                 (
                     spawn_cell,
-                    change_state_on_handle_input_on_mouse,
                     check_is_empty_on_mouse_pos,
                     cell_list_ui,
+                    check_egui_hover,
                 ),
             )
             .add_event::<SpawnCellEvent>();

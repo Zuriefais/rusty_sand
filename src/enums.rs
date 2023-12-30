@@ -7,7 +7,7 @@ use strum_macros::EnumIter;
 pub enum CellType {
     Sand,
     Stone,
-    BloodStone
+    BloodStone,
 }
 
 pub const CELL_SIZE: Vec3 = Vec3::new(10.0, 10.0, 10.0);

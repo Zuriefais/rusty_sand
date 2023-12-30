@@ -2,7 +2,7 @@ use crate::components::{Cell, MainCamera};
 use crate::enums::{CellType, CELL_SIZE};
 use crate::events::SpawnCellEvent;
 use crate::resources::{
-    CellMesh, CellTypeToSpawn, CellWorld, CursorPosition, HandleInputOnMouse, SandMaterials,
+    CellMesh, CellTypeToSpawn, CellWorld, CursorPosition, EguiHoverState, SandMaterials,
 };
 use crate::utils::align_to_grid;
 use bevy::prelude::*;
@@ -12,9 +12,9 @@ pub fn spawn_cell_on_click(
     buttons: Res<Input<MouseButton>>,
     cursor_position: Res<CursorPosition>,
     mut ev_spawn_cell: EventWriter<SpawnCellEvent>,
-    state: ResMut<HandleInputOnMouse>,
+    state: ResMut<EguiHoverState>,
 ) {
-    if buttons.pressed(MouseButton::Left) && state.handle {
+    if buttons.pressed(MouseButton::Left) && !state.is_hovered {
         ev_spawn_cell.send(SpawnCellEvent {
             pos: cursor_position.pos,
         });

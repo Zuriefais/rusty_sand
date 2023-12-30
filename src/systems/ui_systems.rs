@@ -1,6 +1,6 @@
 use crate::components::{Cell, MainCamera};
 use crate::enums::CellType;
-use crate::resources::{CellTypeToSpawn, CellWorld, CursorPosition};
+use crate::resources::{CellTypeToSpawn, CellWorld, CursorPosition, EguiHoverState};
 use crate::utils::{align_to_grid, position_to_cell_coords};
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
@@ -88,4 +88,8 @@ pub fn cell_list_ui(query: Query<(&Cell, &Transform)>, mut contexts: EguiContext
             }
         });
     });
+}
+
+pub fn check_egui_hover(mut contexts: EguiContexts, mut state: ResMut<EguiHoverState>) {
+    state.is_hovered = contexts.ctx_mut().is_pointer_over_area();
 }

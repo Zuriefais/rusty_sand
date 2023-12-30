@@ -1,4 +1,7 @@
-use crate::{components::MainCamera, resources::CursorPosition};
+use crate::{
+    components::MainCamera,
+    resources::{CursorPosition, EguiHoverState},
+};
 use bevy::{
     input::mouse::{MouseScrollUnit, MouseWheel},
     prelude::*,
@@ -32,7 +35,11 @@ pub fn zoom_camera(
     mut mouse_wheel_events: EventReader<MouseWheel>,
     mut query: Query<(&mut Transform, &mut OrthographicProjection)>,
     cursor_position: Res<CursorPosition>,
+    state: ResMut<EguiHoverState>,
 ) {
+    if state.is_hovered {
+        return;
+    }
     for event in mouse_wheel_events.read() {
         let zoom_amount = match event.unit {
             MouseScrollUnit::Line => 0.1 * event.y, // Adjust the multiplier as needed

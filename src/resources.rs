@@ -5,17 +5,16 @@ use crate::{
     utils::position_to_cell_coords,
 };
 use bevy::{prelude::*, sprite::Mesh2dHandle, utils::HashMap};
-use bevy_inspector_egui::InspectorOptions;
 use strum::IntoEnumIterator;
 
-#[derive(Resource, Reflect, InspectorOptions, Default)]
-pub struct HandleInputOnMouse {
-    pub handle: bool,
+#[derive(Resource)]
+pub struct EguiHoverState {
+    pub is_hovered: bool,
 }
 
-impl HandleInputOnMouse {
+impl EguiHoverState {
     pub fn default() -> Self {
-        HandleInputOnMouse { handle: true }
+        Self { is_hovered: true }
     }
 }
 
