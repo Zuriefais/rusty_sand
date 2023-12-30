@@ -7,6 +7,8 @@
     ],
     "cSpell.words": [
         "bytemuck",
+        "egui",
+        "hashbrown",
         "wgpu",
         "winit",
         "zuriefais"

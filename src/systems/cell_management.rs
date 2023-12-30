@@ -2,7 +2,8 @@ use crate::components::{Cell, MainCamera};
 use crate::enums::{CellType, CELL_SIZE};
 use crate::events::SpawnCellEvent;
 use crate::resources::{
-    CellMesh, CellTypeToSpawn, CellWorld, CursorPosition, EguiHoverState, SandMaterials, SimulateWorldState,
+    CellMesh, CellTypeToSpawn, CellWorld, CursorPosition, EguiHoverState, SandMaterials,
+    SimulateWorldState,
 };
 use crate::utils::align_to_grid;
 use bevy::prelude::*;
@@ -97,16 +98,18 @@ pub fn spawn_cell(
 pub fn physics(
     mut cells_query: Query<(Entity, &mut Cell, &mut Transform)>,
     mut cell_world: ResMut<CellWorld>,
-    sim_state: Res<SimulateWorldState>
+    sim_state: Res<SimulateWorldState>,
 ) {
-    if !sim_state.is_simulating { return }
+    if !sim_state.is_simulating {
+        return;
+    }
     for (entity, cell, mut transform) in cells_query.iter_mut() {
         match cell.cell_type {
             CellType::Sand => {
                 // Calculate the grid position below the current cell
-                let below_x = (transform.translation.x / CELL_SIZE.x).floor() as usize;
+                let below_x = (transform.translation.x / CELL_SIZE.x).floor() as isize;
                 let below_y =
-                    ((transform.translation.y - CELL_SIZE.y) / CELL_SIZE.y).floor() as usize;
+                    ((transform.translation.y - CELL_SIZE.y) / CELL_SIZE.y).floor() as isize;
 
                 // Check if the position below is empty
                 if cell_world.get(below_x, below_y).is_none() {
@@ -114,8 +117,8 @@ pub fn physics(
                     transform.translation.y -= CELL_SIZE.y;
 
                     // Update the CellWorld grid
-                    cell_world.insert((below_x, below_y), entity);
-                    cell_world.insert((below_x, below_y + 1), Entity::from_raw(0));
+                    cell_world.insert(below_x, below_y, Some(entity));
+                    cell_world.insert(below_x, below_y + 1, None);
                     // Assuming 0 is used for empty/invalid entities
                 }
             }

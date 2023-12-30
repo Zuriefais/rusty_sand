@@ -30,9 +30,9 @@ pub fn align_to_grid(mut pos: Vec2) -> Vec2 {
     pos
 }
 
-pub fn position_to_cell_coords(pos: Vec2) -> (usize, usize) {
+pub fn position_to_cell_coords(pos: Vec2) -> (isize, isize) {
     (
-        (pos.x / CELL_SIZE.x).floor() as usize,
-        (pos.y / CELL_SIZE.y).floor() as usize,
+        (pos.x / CELL_SIZE.x).floor() as isize,
+        (pos.y / CELL_SIZE.y).floor() as isize,
     )
 }

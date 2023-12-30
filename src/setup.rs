@@ -3,7 +3,8 @@ use crate::{
     components::MainCamera,
     events::SpawnCellEvent,
     resources::{
-        CellMesh, CellTypeToSpawn, CellWorld, CursorPosition, EguiHoverState, SandMaterials, SimulateWorldState,
+        CellMesh, CellTypeToSpawn, CellWorld, CursorPosition, EguiHoverState, SandMaterials,
+        SimulateWorldState,
     },
     systems::{
         camera::{move_camera, zoom_camera},
