@@ -3,7 +3,7 @@ use crate::{
     components::MainCamera,
     events::SpawnCellEvent,
     resources::{
-        CellMesh, CellTypeToSpawn, CellWorld, CursorPosition, EguiHoverState, SandMaterials,
+        CellMesh, CellTypeToSpawn, CellWorld, CursorPosition, EguiHoverState, SandMaterials, SimulateWorldState,
     },
     systems::{
         camera::{move_camera, zoom_camera},
@@ -49,6 +49,8 @@ impl Plugin for SetupPlugin {
             .insert_resource(CellTypeToSpawn::default())
             .insert_resource(EguiHoverState::default())
             .insert_resource(CursorPosition::default())
+            .insert_resource(SimulateWorldState::default())
+            .register_type::<SimulateWorldState>()
             .add_plugins(FpsCounterPlugin)
             .add_systems(Update, spawn_cell_on_touch)
             .add_systems(Update, zoom_camera)

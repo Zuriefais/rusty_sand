@@ -5,7 +5,22 @@ use crate::{
     utils::position_to_cell_coords,
 };
 use bevy::{prelude::*, sprite::Mesh2dHandle, utils::HashMap};
+use bevy_inspector_egui::{InspectorOptions, inspector_options::ReflectInspectorOptions};
 use strum::IntoEnumIterator;
+
+
+
+#[derive(Reflect, Resource, Default, InspectorOptions)]
+#[reflect(Resource, InspectorOptions)]
+pub struct SimulateWorldState {
+    pub is_simulating: bool
+}
+
+impl SimulateWorldState {
+    pub fn default() -> Self {
+        Self { is_simulating: true }
+    }
+}
 
 #[derive(Resource)]
 pub struct EguiHoverState {
@@ -14,7 +29,7 @@ pub struct EguiHoverState {
 
 impl EguiHoverState {
     pub fn default() -> Self {
-        Self { is_hovered: true }
+        Self { is_hovered: false }
     }
 }
 

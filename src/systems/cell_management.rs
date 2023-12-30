@@ -2,7 +2,7 @@ use crate::components::{Cell, MainCamera};
 use crate::enums::{CellType, CELL_SIZE};
 use crate::events::SpawnCellEvent;
 use crate::resources::{
-    CellMesh, CellTypeToSpawn, CellWorld, CursorPosition, EguiHoverState, SandMaterials,
+    CellMesh, CellTypeToSpawn, CellWorld, CursorPosition, EguiHoverState, SandMaterials, SimulateWorldState,
 };
 use crate::utils::align_to_grid;
 use bevy::prelude::*;
@@ -97,7 +97,9 @@ pub fn spawn_cell(
 pub fn physics(
     mut cells_query: Query<(Entity, &mut Cell, &mut Transform)>,
     mut cell_world: ResMut<CellWorld>,
+    sim_state: Res<SimulateWorldState>
 ) {
+    if !sim_state.is_simulating { return }
     for (entity, cell, mut transform) in cells_query.iter_mut() {
         match cell.cell_type {
             CellType::Sand => {
