@@ -1,9 +1,9 @@
 use crate::components::{Cell, MainCamera};
 use crate::enums::{CellType, CELL_SIZE};
 use crate::events::SpawnCellEvent;
+use crate::resources::cell_world::CellWorld;
 use crate::resources::{
-    CellMesh, CellTypeToSpawn, CellWorld, CursorPosition, EguiHoverState, SandMaterials,
-    SimulateWorldState,
+    CellMesh, CellTypeToSpawn, CursorPosition, EguiHoverState, SandMaterials, SimulateWorldState,
 };
 use crate::utils::align_to_grid;
 use bevy::prelude::*;

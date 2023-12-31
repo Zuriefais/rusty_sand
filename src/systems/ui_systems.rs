@@ -1,6 +1,7 @@
 use crate::components::{Cell, MainCamera};
 use crate::enums::CellType;
-use crate::resources::{CellTypeToSpawn, CellWorld, CursorPosition, EguiHoverState};
+use crate::resources::cell_world::CellWorld;
+use crate::resources::{CellTypeToSpawn, CursorPosition, EguiHoverState};
 use crate::utils::{align_to_grid, position_to_cell_coords};
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};

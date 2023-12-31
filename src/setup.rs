@@ -3,8 +3,8 @@ use crate::{
     components::MainCamera,
     events::SpawnCellEvent,
     resources::{
-        CellMesh, CellTypeToSpawn, CellWorld, CursorPosition, EguiHoverState, SandMaterials,
-        SimulateWorldState,
+        cell_world::CellWorld, CellMesh, CellTypeToSpawn, CursorPosition, EguiHoverState,
+        SandMaterials, SimulateWorldState,
     },
     systems::{
         camera::{move_camera, zoom_camera},
@@ -32,7 +32,7 @@ impl Plugin for SetupPlugin {
             .add_plugins(DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
                     title: "rusty sand".into(),
-                    resolution: (500., 300.).into(),
+                    resolution: (1280., 720.).into(),
                     present_mode: PresentMode::AutoVsync,
                     fit_canvas_to_parent: true,
                     ..default()
