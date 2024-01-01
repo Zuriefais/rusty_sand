@@ -8,6 +8,7 @@ pub enum CellType {
     Sand,
     Stone,
     BloodStone,
+    Blood,
 }
 
 pub const CELL_SIZE: Vec3 = Vec3::new(10.0, 10.0, 10.0);
@@ -26,6 +27,10 @@ lazy_static! {
         map.insert(
             CellType::BloodStone,
             bevy::render::color::Color::hex("8B0000").unwrap(),
+        );
+        map.insert(
+            CellType::Blood,
+            bevy::render::color::Color::hex("ff3f28").unwrap(),
         );
         map
     };

@@ -5,7 +5,7 @@ use crate::resources::cell_world::CellWorld;
 use crate::resources::{
     CellMesh, CellTypeToSpawn, CursorPosition, EguiHoverState, SandMaterials, SimulateWorldState,
 };
-use crate::utils::align_to_grid;
+use crate::utils::{align_to_grid, position_to_cell_coords};
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
 
@@ -14,10 +14,12 @@ pub fn spawn_cell_on_click(
     cursor_position: Res<CursorPosition>,
     mut ev_spawn_cell: EventWriter<SpawnCellEvent>,
     state: ResMut<EguiHoverState>,
+    cell_type_to_spawn: Res<CellTypeToSpawn>,
 ) {
     if buttons.pressed(MouseButton::Left) && !state.is_hovered {
         ev_spawn_cell.send(SpawnCellEvent {
             pos: cursor_position.pos,
+            cell_type: cell_type_to_spawn.type_to_select,
         });
     }
 }
@@ -26,6 +28,7 @@ pub fn spawn_cell_on_touch(
     touches: Res<Touches>,
     camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     mut ev_spawn_cell: EventWriter<SpawnCellEvent>,
+    cell_type_to_spawn: Res<CellTypeToSpawn>,
 ) {
     let (camera, camera_transform) = camera_q.single();
 
@@ -39,6 +42,7 @@ pub fn spawn_cell_on_touch(
 
             ev_spawn_cell.send(SpawnCellEvent {
                 pos: new_touch_position,
+                cell_type: cell_type_to_spawn.type_to_select,
             });
             return;
         }
@@ -49,69 +53,71 @@ pub fn spawn_cell(
     mut commands: Commands,
     materials: Res<SandMaterials>,
     cell_mesh: Res<CellMesh>,
-    cell_type_to_spawn: ResMut<CellTypeToSpawn>,
     mut cell_world: ResMut<CellWorld>,
     mut ev_spawn_cell: EventReader<SpawnCellEvent>,
 ) {
     for ev in ev_spawn_cell.read() {
-        if let Some(&material_index) = materials.color_ids.get(&cell_type_to_spawn.type_to_select) {
-            // Access the material using the material index
-            if let Some(material) = materials.materials.get(material_index) {
-                cell_world.insert_by_pos_if_empty(
-                    ev.pos,
-                    commands
-                        .spawn((
-                            MaterialMesh2dBundle {
-                                mesh: cell_mesh.mesh.clone(),
-                                transform: Transform {
-                                    translation: ev.pos.extend(0.0),
-                                    scale: CELL_SIZE,
-                                    ..Default::default()
-                                },
-                                material: material.clone(),
-                                ..Default::default()
-                            },
-                            Cell {
-                                cell_type: cell_type_to_spawn.type_to_select,
-                            },
-                        ))
-                        .id(),
-                );
+        let grid_pos = position_to_cell_coords(ev.pos);
+        if cell_world.is_cell_empty(grid_pos) {
+            if let Some(&material_index) =
+                materials.color_ids.get(&ev.cell_type)
+            {
+                // Access the material using the material index
+                if let Some(material) = materials.materials.get(material_index) {
+                    cell_world.insert(
+                        grid_pos.0,
+                        grid_pos.1,
+                        Some(
+                            commands
+                                .spawn((
+                                    MaterialMesh2dBundle {
+                                        mesh: cell_mesh.mesh.clone(),
+                                        transform: Transform {
+                                            translation: ev.pos.extend(0.0),
+                                            scale: CELL_SIZE,
+                                            ..Default::default()
+                                        },
+                                        material: material.clone(),
+                                        ..Default::default()
+                                    },
+                                    Cell {
+                                        cell_type: ev.cell_type,
+                                    },
+                                ))
+                                .id(),
+                        ),
+                    );
+                } else {
+                    warn!(
+                        "Material for cell type {:?} not found",
+                        ev.cell_type
+                    );
+                }
             } else {
-                // Handle the case where the material is not found
                 warn!(
-                    "Material for cell type {:?} not found",
-                    cell_type_to_spawn.type_to_select
+                    "No material index for cell type {:?}",
+                    ev.cell_type
                 );
             }
-        } else {
-            // Handle the case where the material index is not found
-            warn!(
-                "No material index for cell type {:?}",
-                cell_type_to_spawn.type_to_select
-            );
         }
     }
-    // Get the material index for the given cell type
 }
 
 pub fn physics(
     mut cells_query: Query<(Entity, &mut Cell, &mut Transform)>,
     mut cell_world: ResMut<CellWorld>,
     sim_state: Res<SimulateWorldState>,
+    mut ev_spawn_cell: EventWriter<SpawnCellEvent>,
 ) {
     if !sim_state.is_simulating {
         return;
     }
     for (entity, cell, mut transform) in cells_query.iter_mut() {
         match cell.cell_type {
-            CellType::Sand => {
-                // Calculate the grid position below the current cell
+            CellType::Sand | CellType::Blood => {
                 let below_x = (transform.translation.x / CELL_SIZE.x).floor() as isize;
                 let below_y =
                     ((transform.translation.y - CELL_SIZE.y) / CELL_SIZE.y).floor() as isize;
-
-                // Check if the position below is empty
                 if cell_world.get(below_x, below_y).is_none() {
                     // Move the cell down if empty
                     transform.translation.y -= CELL_SIZE.y;
@@ -121,6 +127,24 @@ pub fn physics(
                     cell_world.insert(below_x, below_y + 1, None);
                     // Assuming 0 is used for empty/invalid entities
                 }
+            }
+            CellType::BloodStone => {
+                let mut pos = transform.translation;
+                pos.y -= CELL_SIZE.y;
+
+                let grid_pos = position_to_cell_coords(pos);
+                //info!("{:?}, {}", pos, cell_world.is_cell_empty(grid_pos));
+
+                if !cell_world.is_cell_empty(grid_pos) {
+                    continue;
+                }
+
+                info!("{:?}", grid_pos,);
+
+                ev_spawn_cell.send(SpawnCellEvent {
+                    pos: Vec2::new(pos.x, pos.y),
+                    cell_type: CellType::Blood,
+                });
             }
             _ => {}
         }
