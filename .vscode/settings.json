@@ -9,6 +9,7 @@
         "bytemuck",
         "egui",
         "hashbrown",
+        "Vsync",
         "wgpu",
         "winit",
         "zuriefais"

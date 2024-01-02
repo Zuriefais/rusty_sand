@@ -3,8 +3,6 @@ use std::ops::Range;
 use bevy::prelude::*;
 use grid::Grid;
 
-use crate::utils::position_to_cell_coords;
-
 #[derive(Resource)]
 pub struct CellWorld {
     quadrant_i: Grid<Option<Entity>>,   // Positive row, positive col
@@ -18,8 +16,8 @@ pub struct CellWorld {
 
 impl CellWorld {
     pub fn default() -> Self {
-        let rows = 10000;
-        let cols = 10000;
+        let rows = 1000;
+        let cols = 1000;
         Self {
             quadrant_i: Grid::new(rows, cols),
             quadrant_ii: Grid::new(rows, cols),
@@ -50,12 +48,6 @@ impl CellWorld {
         }
     }
 
-    pub fn insert_if_empty(&mut self, pos: (isize, isize), entity: Entity) {
-        if self.is_cell_empty(pos) {
-            self.insert(pos.0, pos.1, Some(entity));
-        }
-    }
-
     pub fn is_cell_empty(&self, pos: (isize, isize)) -> bool {
         if self.check_bounds(pos) {
             return true;
@@ -64,12 +56,6 @@ impl CellWorld {
             None => true,
             Some(_) => false,
         }
-    }
-
-    pub fn insert_by_pos_if_empty(&mut self, pos: Vec2, entity: Entity) {
-        let pos = position_to_cell_coords(pos);
-        self.insert_if_empty(pos, entity);
-        info!("cell count {}, x: {}, y: {}", self.cell_count, pos.0, pos.1)
     }
 
     pub fn get(&self, row: isize, col: isize) -> Option<Entity> {
@@ -117,7 +103,7 @@ mod tests {
         let col = -1700;
 
         assert_eq!(
-            false,
+            true,
             world.size_rows.contains(&row) && world.size_cols.contains(&col)
         )
     }

@@ -1,6 +1,7 @@
 // setup.rs
 use crate::{
     components::MainCamera,
+    enums::{CellPhysicsType, CellType},
     events::SpawnCellEvent,
     resources::{
         cell_world::CellWorld, CellMesh, CellTypeToSpawn, CursorPosition, EguiHoverState,
@@ -8,17 +9,22 @@ use crate::{
     },
     systems::{
         camera::{move_camera, zoom_camera},
-        cell_management::{physics, spawn_cell, spawn_cell_on_click, spawn_cell_on_touch},
+        cell_management::{
+            blood_stone_physics, fluid_physics, sand_physics, spawn_cell, spawn_cell_on_click,
+            spawn_cell_on_touch,
+        },
         ui_systems::{
             cell_list_ui, check_egui_hover, check_is_empty_on_mouse_pos, my_cursor_system,
             show_cell_count, spawn_cell_type,
         },
         window_management::set_window_icon,
     },
+    utils::get_screen_center,
 };
 use bevy::{prelude::*, window::PresentMode};
 
 use bevy_egui::EguiPlugin;
+use bevy_enum_filter::prelude::AddEnumFilter;
 use bevy_fps_counter::FpsCounterPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
@@ -40,11 +46,12 @@ impl Plugin for SetupPlugin {
                 ..default()
             }))
             .add_plugins(EguiPlugin)
+            .add_enum_filter::<CellPhysicsType>()
             .add_systems(Update, spawn_cell_type)
             .add_systems(Update, my_cursor_system)
             .add_systems(Update, spawn_cell_on_click)
             .add_plugins(WorldInspectorPlugin::new())
-            .add_systems(Update, physics)
+            .add_systems(Update, (sand_physics, fluid_physics, blood_stone_physics))
             .add_systems(Update, move_camera)
             .insert_resource(CellWorld::default())
             .insert_resource(CellTypeToSpawn::default())
@@ -61,7 +68,7 @@ impl Plugin for SetupPlugin {
                 (
                     spawn_cell,
                     check_is_empty_on_mouse_pos,
-                    cell_list_ui,
+                    //cell_list_ui,
                     check_egui_hover,
                 ),
             )

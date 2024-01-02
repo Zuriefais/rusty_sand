@@ -1,5 +1,6 @@
 // enums.rs
 use bevy::{prelude::*, utils::hashbrown::HashMap};
+use bevy_enum_filter::EnumFilter;
 use lazy_static::lazy_static;
 use strum_macros::EnumIter;
 
@@ -9,6 +10,14 @@ pub enum CellType {
     Stone,
     BloodStone,
     Blood,
+}
+
+#[derive(Component, EnumFilter)]
+pub enum CellPhysicsType {
+    Sand,
+    Fluid,
+    BloodStone,
+    Static,
 }
 
 pub const CELL_SIZE: Vec3 = Vec3::new(10.0, 10.0, 10.0);
