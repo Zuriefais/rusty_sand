@@ -70,6 +70,16 @@ pub fn fluid_physics(
 
             cell_world.insert(below_x+1, below_y, Some(entity));
             cell_world.insert(below_x, below_y + 1, None);
+        } else if cell_world.get(below_x-1, below_y + 1).is_none() {
+            transform.translation.x -= CELL_SIZE.x;
+
+            cell_world.insert(below_x-1, below_y+1, Some(entity));
+            cell_world.insert(below_x, below_y + 1, None);
+        } else if cell_world.get(below_x+1, below_y + 1).is_none() {
+            transform.translation.x += CELL_SIZE.x;
+
+            cell_world.insert(below_x+1, below_y+1, Some(entity));
+            cell_world.insert(below_x, below_y + 1, None);
         }
     }
 }

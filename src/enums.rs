@@ -39,7 +39,7 @@ lazy_static! {
         );
         map.insert(
             CellType::Blood,
-            bevy::render::color::Color::hex("ff3f28").unwrap(),
+            bevy::render::color::Color::hex("5a180e").unwrap(),
         );
         map
     };
