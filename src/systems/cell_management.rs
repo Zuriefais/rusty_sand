@@ -1,16 +1,17 @@
 use crate::components::{Cell, MainCamera};
 use crate::enums::{CellPhysicsType, CellType, CELL_SIZE};
-use crate::events::SpawnCellEvent;
+use crate::events::{RemoveCellEvent, SpawnCellEvent};
 use crate::resources::cell_world::CellWorld;
 use crate::resources::{CellMesh, CellTypeToSpawn, CursorPosition, EguiHoverState, SandMaterials};
 use crate::utils::{align_to_grid, position_to_cell_coords};
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
 
-pub fn spawn_cell_on_click(
+pub fn spawn_or_remove_cell_on_click(
     buttons: Res<Input<MouseButton>>,
     cursor_position: Res<CursorPosition>,
     mut ev_spawn_cell: EventWriter<SpawnCellEvent>,
+    mut ev_remove_cell: EventWriter<RemoveCellEvent>,
     state: ResMut<EguiHoverState>,
     cell_type_to_spawn: Res<CellTypeToSpawn>,
 ) {
@@ -19,6 +20,8 @@ pub fn spawn_cell_on_click(
             pos: cursor_position.pos,
             cell_type: cell_type_to_spawn.type_to_select,
         });
+    } else if buttons.pressed(MouseButton::Right) && !state.is_hovered {
+        ev_remove_cell.send(RemoveCellEvent {pos: position_to_cell_coords(cursor_position.pos)});
     }
 }
 
@@ -89,6 +92,25 @@ pub fn spawn_cell(
                 }
             } else {
                 warn!("No material index for cell type {:?}", ev.cell_type);
+            }
+        }
+    }
+}
+
+pub fn remove_cell(
+    mut ev_remove_cell: EventReader<RemoveCellEvent>,
+    mut commands: Commands,
+    mut world: ResMut<CellWorld>,
+) {
+    for event in ev_remove_cell.read() {
+        let entity = world.get(event.pos.0, event.pos.1);
+        match entity {
+            Some(entity) => {
+                world.insert(event.pos.0, event.pos.1, None);
+                commands.entity(entity).despawn();
+            }
+            None => {
+                return;
             }
         }
     }

@@ -1,29 +1,24 @@
 // setup.rs
 use crate::{
     components::MainCamera,
-    enums::{CellPhysicsType, CellType},
-    events::SpawnCellEvent,
+    enums::CellPhysicsType,
+    events::{RemoveCellEvent, SpawnCellEvent},
     resources::{
         cell_world::CellWorld, CellMesh, CellTypeToSpawn, CursorPosition, EguiHoverState,
         SandMaterials, SimulateWorldState,
     },
     systems::{
         camera::{move_camera, zoom_camera},
-        cell_management::{spawn_cell, spawn_cell_on_click, spawn_cell_on_touch},
+        cell_management::{remove_cell, spawn_cell, spawn_cell_on_touch, spawn_or_remove_cell_on_click},
         physics::{blood_stone_physics, fluid_physics, sand_physics},
         ui_systems::{
-            cell_list_ui, check_egui_hover, check_is_empty_on_mouse_pos, my_cursor_system,
-            show_cell_count, spawn_cell_type,
+            check_egui_hover, check_is_empty_on_mouse_pos, my_cursor_system, show_cell_count,
+            spawn_cell_type,
         },
         window_management::set_window_icon,
     },
-    utils::get_screen_center,
 };
-use bevy::{
-    prelude::*,
-    render::camera::RenderTarget,
-    window::{PresentMode, WindowRef, WindowResolution},
-};
+use bevy::{prelude::*, window::PresentMode};
 
 use bevy_egui::EguiPlugin;
 use bevy_enum_filter::prelude::AddEnumFilter;
@@ -51,7 +46,7 @@ impl Plugin for SetupPlugin {
             .add_enum_filter::<CellPhysicsType>()
             .add_systems(Update, spawn_cell_type)
             .add_systems(Update, my_cursor_system)
-            .add_systems(Update, spawn_cell_on_click)
+            .add_systems(Update, spawn_or_remove_cell_on_click)
             .add_plugins(WorldInspectorPlugin::new())
             .add_systems(Update, (sand_physics, fluid_physics, blood_stone_physics))
             .add_systems(Update, move_camera)
@@ -69,12 +64,14 @@ impl Plugin for SetupPlugin {
                 FixedUpdate,
                 (
                     spawn_cell,
+                    remove_cell,
                     check_is_empty_on_mouse_pos,
                     //cell_list_ui,
                     check_egui_hover,
                 ),
             )
-            .add_event::<SpawnCellEvent>();
+            .add_event::<SpawnCellEvent>()
+            .add_event::<RemoveCellEvent>();
     }
 }
 

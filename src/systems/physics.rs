@@ -25,17 +25,21 @@ pub fn sand_physics(
 
             cell_world.insert(below_x, below_y, Some(entity));
             cell_world.insert(below_x, below_y + 1, None);
-        } else if cell_world.get(below_x-1, below_y).is_none() && !cell_world.get(below_x-1, below_y+1).is_some() {
+        } else if cell_world.get(below_x - 1, below_y).is_none()
+            && !cell_world.get(below_x - 1, below_y + 1).is_some()
+        {
             transform.translation.y -= CELL_SIZE.y;
             transform.translation.x -= CELL_SIZE.x;
 
-            cell_world.insert(below_x-1, below_y, Some(entity));
+            cell_world.insert(below_x - 1, below_y, Some(entity));
             cell_world.insert(below_x, below_y + 1, None);
-        } else if cell_world.get(below_x+1, below_y).is_none() && !cell_world.get(below_x+1, below_y+1).is_some() {
+        } else if cell_world.get(below_x + 1, below_y).is_none()
+            && !cell_world.get(below_x + 1, below_y + 1).is_some()
+        {
             transform.translation.y -= CELL_SIZE.y;
             transform.translation.x += CELL_SIZE.x;
 
-            cell_world.insert(below_x+1, below_y, Some(entity));
+            cell_world.insert(below_x + 1, below_y, Some(entity));
             cell_world.insert(below_x, below_y + 1, None);
         }
     }
@@ -58,27 +62,31 @@ pub fn fluid_physics(
 
             cell_world.insert(below_x, below_y, Some(entity));
             cell_world.insert(below_x, below_y + 1, None);
-        } else if cell_world.get(below_x-1, below_y).is_none() && !cell_world.get(below_x-1, below_y+1).is_some() {
+        } else if cell_world.get(below_x - 1, below_y).is_none()
+            && !cell_world.get(below_x - 1, below_y + 1).is_some()
+        {
             transform.translation.y -= CELL_SIZE.y;
             transform.translation.x -= CELL_SIZE.x;
 
-            cell_world.insert(below_x-1, below_y, Some(entity));
+            cell_world.insert(below_x - 1, below_y, Some(entity));
             cell_world.insert(below_x, below_y + 1, None);
-        } else if cell_world.get(below_x+1, below_y).is_none() && !cell_world.get(below_x+1, below_y+1).is_some() {
+        } else if cell_world.get(below_x + 1, below_y).is_none()
+            && !cell_world.get(below_x + 1, below_y + 1).is_some()
+        {
             transform.translation.y -= CELL_SIZE.y;
             transform.translation.x += CELL_SIZE.x;
 
-            cell_world.insert(below_x+1, below_y, Some(entity));
+            cell_world.insert(below_x + 1, below_y, Some(entity));
             cell_world.insert(below_x, below_y + 1, None);
-        } else if cell_world.get(below_x-1, below_y + 1).is_none() {
+        } else if cell_world.get(below_x - 1, below_y + 1).is_none() {
             transform.translation.x -= CELL_SIZE.x;
 
-            cell_world.insert(below_x-1, below_y+1, Some(entity));
+            cell_world.insert(below_x - 1, below_y + 1, Some(entity));
             cell_world.insert(below_x, below_y + 1, None);
-        } else if cell_world.get(below_x+1, below_y + 1).is_none() {
+        } else if cell_world.get(below_x + 1, below_y + 1).is_none() {
             transform.translation.x += CELL_SIZE.x;
 
-            cell_world.insert(below_x+1, below_y+1, Some(entity));
+            cell_world.insert(below_x + 1, below_y + 1, Some(entity));
             cell_world.insert(below_x, below_y + 1, None);
         }
     }
