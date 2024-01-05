@@ -2,9 +2,7 @@ use crate::components::{Cell, MainCamera};
 use crate::enums::{CellPhysicsType, CellType, CELL_SIZE};
 use crate::events::SpawnCellEvent;
 use crate::resources::cell_world::CellWorld;
-use crate::resources::{
-    CellMesh, CellTypeToSpawn, CursorPosition, EguiHoverState, SandMaterials,
-};
+use crate::resources::{CellMesh, CellTypeToSpawn, CursorPosition, EguiHoverState, SandMaterials};
 use crate::utils::{align_to_grid, position_to_cell_coords};
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;

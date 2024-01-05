@@ -9,19 +9,21 @@ use crate::{
     },
     systems::{
         camera::{move_camera, zoom_camera},
-        cell_management::{
-            spawn_cell, spawn_cell_on_click,
-            spawn_cell_on_touch,
-        },
+        cell_management::{spawn_cell, spawn_cell_on_click, spawn_cell_on_touch},
+        physics::{blood_stone_physics, fluid_physics, sand_physics},
         ui_systems::{
             cell_list_ui, check_egui_hover, check_is_empty_on_mouse_pos, my_cursor_system,
             show_cell_count, spawn_cell_type,
         },
-        window_management::set_window_icon, physics::{blood_stone_physics, fluid_physics, sand_physics},
+        window_management::set_window_icon,
     },
     utils::get_screen_center,
 };
-use bevy::{prelude::*, window::PresentMode};
+use bevy::{
+    prelude::*,
+    render::camera::RenderTarget,
+    window::{PresentMode, WindowRef, WindowResolution},
+};
 
 use bevy_egui::EguiPlugin;
 use bevy_enum_filter::prelude::AddEnumFilter;
@@ -64,7 +66,7 @@ impl Plugin for SetupPlugin {
             .add_systems(Update, zoom_camera)
             .add_systems(Update, show_cell_count)
             .add_systems(
-                Update,
+                FixedUpdate,
                 (
                     spawn_cell,
                     check_is_empty_on_mouse_pos,

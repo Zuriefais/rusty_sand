@@ -37,19 +37,24 @@ pub fn my_cursor_system(
     mut contexts: EguiContexts,
     mut cursor_position: ResMut<CursorPosition>,
 ) {
-    let window = windows.single();
+    let window = windows.get_single();
     let (camera, camera_transform) = camera_q.single();
 
-    if let Some(world_position) = window
-        .cursor_position()
-        .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
-    {
-        cursor_position.pos = align_to_grid(world_position);
-    }
+    match window {
+        Ok(window) => {
+            if let Some(world_position) = window
+                .cursor_position()
+                .and_then(|cursor| camera.viewport_to_world_2d(camera_transform, cursor))
+            {
+                cursor_position.pos = align_to_grid(world_position);
+            }
 
-    egui::Window::new("Cursor Position aligned to grid").show(contexts.ctx_mut(), |ui| {
-        ui.label(cursor_position.pos.to_string());
-    });
+            egui::Window::new("Cursor Position aligned to grid").show(contexts.ctx_mut(), |ui| {
+                ui.label(cursor_position.pos.to_string());
+            });
+        }
+        Err(_) => return,
+    }
 }
 
 pub fn show_cell_count(mut contexts: EguiContexts, cell_count: ResMut<CellWorld>) {

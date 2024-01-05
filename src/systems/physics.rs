@@ -1,7 +1,12 @@
+use crate::enums::cell_physics_type_filters;
+use crate::{
+    enums::{CellType, CELL_SIZE},
+    events::SpawnCellEvent,
+    resources::{cell_world::CellWorld, SimulateWorldState},
+    utils::position_to_cell_coords,
+};
 use bevy::prelude::*;
 use bevy_enum_filter::Enum;
-use crate::enums::cell_physics_type_filters;
-use crate::{resources::{cell_world::CellWorld, SimulateWorldState}, enums::{CELL_SIZE, CellType}, events::SpawnCellEvent, utils::position_to_cell_coords};
 
 pub fn sand_physics(
     mut query: Query<(Entity, &mut Transform), With<Enum!(CellPhysicsType::Sand)>>,
@@ -19,6 +24,18 @@ pub fn sand_physics(
             transform.translation.y -= CELL_SIZE.y;
 
             cell_world.insert(below_x, below_y, Some(entity));
+            cell_world.insert(below_x, below_y + 1, None);
+        } else if cell_world.get(below_x-1, below_y).is_none() && !cell_world.get(below_x-1, below_y+1).is_some() {
+            transform.translation.y -= CELL_SIZE.y;
+            transform.translation.x -= CELL_SIZE.x;
+
+            cell_world.insert(below_x-1, below_y, Some(entity));
+            cell_world.insert(below_x, below_y + 1, None);
+        } else if cell_world.get(below_x+1, below_y).is_none() && !cell_world.get(below_x+1, below_y+1).is_some() {
+            transform.translation.y -= CELL_SIZE.y;
+            transform.translation.x += CELL_SIZE.x;
+
+            cell_world.insert(below_x+1, below_y, Some(entity));
             cell_world.insert(below_x, below_y + 1, None);
         }
     }
@@ -40,6 +57,18 @@ pub fn fluid_physics(
             transform.translation.y -= CELL_SIZE.y;
 
             cell_world.insert(below_x, below_y, Some(entity));
+            cell_world.insert(below_x, below_y + 1, None);
+        } else if cell_world.get(below_x-1, below_y).is_none() && !cell_world.get(below_x-1, below_y+1).is_some() {
+            transform.translation.y -= CELL_SIZE.y;
+            transform.translation.x -= CELL_SIZE.x;
+
+            cell_world.insert(below_x-1, below_y, Some(entity));
+            cell_world.insert(below_x, below_y + 1, None);
+        } else if cell_world.get(below_x+1, below_y).is_none() && !cell_world.get(below_x+1, below_y+1).is_some() {
+            transform.translation.y -= CELL_SIZE.y;
+            transform.translation.x += CELL_SIZE.x;
+
+            cell_world.insert(below_x+1, below_y, Some(entity));
             cell_world.insert(below_x, below_y + 1, None);
         }
     }
