@@ -10,14 +10,14 @@ use crate::{
     systems::{
         camera::{move_camera, zoom_camera},
         cell_management::{
-            blood_stone_physics, fluid_physics, sand_physics, spawn_cell, spawn_cell_on_click,
+            spawn_cell, spawn_cell_on_click,
             spawn_cell_on_touch,
         },
         ui_systems::{
             cell_list_ui, check_egui_hover, check_is_empty_on_mouse_pos, my_cursor_system,
             show_cell_count, spawn_cell_type,
         },
-        window_management::set_window_icon,
+        window_management::set_window_icon, physics::{blood_stone_physics, fluid_physics, sand_physics},
     },
     utils::get_screen_center,
 };
