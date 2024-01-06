@@ -1,0 +1,5 @@
+CellAsset(
+    cell_physics_behavior: BloodStone,
+    color: "8B0000",
+    cell_type_name: "Blood stone",
+)

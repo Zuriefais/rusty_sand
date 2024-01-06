@@ -1,6 +1,7 @@
 use crate::enums::cell_physics_type_filters;
+use crate::resources::CellAssets;
 use crate::{
-    enums::{CellType, CELL_SIZE},
+    enums::CELL_SIZE,
     events::SpawnCellEvent,
     resources::{cell_world::CellWorld, SimulateWorldState},
     utils::position_to_cell_coords,
@@ -97,6 +98,7 @@ pub fn blood_stone_physics(
     cell_world: ResMut<CellWorld>,
     mut ev_spawn_cell: EventWriter<SpawnCellEvent>,
     state: Res<SimulateWorldState>,
+    cell_assets: Res<CellAssets>,
 ) {
     if !state.is_simulating {
         return;
@@ -112,7 +114,7 @@ pub fn blood_stone_physics(
         }
         ev_spawn_cell.send(SpawnCellEvent {
             pos: Vec2::new(pos.x, pos.y),
-            cell_type: CellType::Blood,
+            cell_type: cell_assets.handles["blood"].clone(),
         });
     }
 }

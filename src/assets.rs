@@ -1,0 +1,68 @@
+use bevy::asset::io::Reader;
+use bevy::asset::{AsyncReadExt, LoadedAsset};
+use bevy::utils::thiserror;
+use bevy::{
+    asset::{AssetLoader, LoadContext},
+    prelude::*,
+    utils::BoxedFuture,
+};
+use serde::{Deserialize, Deserializer};
+use thiserror::Error;
+
+use crate::enums::CellPhysicsType;
+
+#[derive(Asset, TypePath, Debug, Deserialize)]
+pub struct CellAsset {
+    pub cell_physics_behavior: CellPhysicsType,
+    #[serde(deserialize_with = "hex_to_color")]
+    pub color: Color,
+    pub cell_type_name: String,
+    #[serde(skip)]
+    pub material: Handle<ColorMaterial>,
+}
+
+fn hex_to_color<'de, D>(deserializer: D) -> Result<Color, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s = String::deserialize(deserializer)?;
+    Color::hex(&s).map_err(serde::de::Error::custom)
+}
+
+#[derive(Default)]
+pub struct CellAssetLoader;
+
+#[non_exhaustive]
+#[derive(Debug, Error)]
+pub enum CellAssetLoaderError {
+    #[error("Could not load asset: {0}")]
+    Io(#[from] std::io::Error),
+    #[error("Could not parse RON: {0}")]
+    RonSpannedError(#[from] ron::error::SpannedError),
+}
+
+impl AssetLoader for CellAssetLoader {
+    type Asset = CellAsset;
+    type Settings = ();
+    type Error = CellAssetLoaderError;
+    fn load<'a>(
+        &'a self,
+        reader: &'a mut Reader,
+        _settings: &'a (),
+        load_context: &'a mut LoadContext,
+    ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
+        Box::pin(async move {
+            let mut bytes = Vec::new();
+            reader.read_to_end(&mut bytes).await?;
+            let mut custom_asset = ron::de::from_bytes::<CellAsset>(&bytes)?;
+            let color_material = LoadedAsset::from(ColorMaterial::from(custom_asset.color));
+            custom_asset.material =
+                load_context.add_loaded_labeled_asset("Color material", color_material);
+            Ok(custom_asset)
+        })
+    }
+
+    fn extensions(&self) -> &[&str] {
+        &["custom"]
+    }
+}

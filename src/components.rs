@@ -1,10 +1,8 @@
-// components.rs
-use crate::enums::CellType;
 use bevy::prelude::*;
 
-#[derive(Component, Debug)]
+#[derive(Component)]
 pub struct Cell {
-    pub cell_type: CellType,
+    pub cell_type: String,
 }
 
 #[derive(Component)]

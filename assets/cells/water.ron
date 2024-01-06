@@ -1,0 +1,5 @@
+CellAsset(
+    cell_physics_behavior: Fluid,
+    color: "efffff",
+    cell_type_name: "Water",
+)

@@ -1,4 +1,5 @@
 // main.rs or lib.rs
+mod assets;
 mod components;
 mod enums;
 mod events;

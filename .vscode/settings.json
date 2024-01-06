@@ -10,6 +10,8 @@
         "despawn",
         "egui",
         "hashbrown",
+        "lifetimeless",
+        "thiserror",
         "Vsync",
         "wgpu",
         "winit",

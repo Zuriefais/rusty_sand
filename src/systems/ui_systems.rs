@@ -1,33 +1,42 @@
 use crate::components::{Cell, MainCamera};
-use crate::enums::CellType;
 use crate::resources::cell_world::CellWorld;
-use crate::resources::{CellTypeToSpawn, CursorPosition, EguiHoverState};
+use crate::resources::{CellAssets, CellTypeToSpawn, CursorPosition, EguiHoverState, Selected};
 use crate::utils::{align_to_grid, position_to_cell_coords};
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
-use strum::IntoEnumIterator;
 
 pub fn spawn_cell_type(
     mut contexts: EguiContexts,
-    mut cell_type_to_spawn: ResMut<CellTypeToSpawn>,
+    cell_type_to_spawn: ResMut<CellTypeToSpawn>,
+    cell_assets: Res<CellAssets>,
 ) {
-    egui::Window::new("Cell Type").show(contexts.ctx_mut(), |ui| {
-        egui::ComboBox::from_label("Select one!")
-            .selected_text(format!("{:?}", cell_type_to_spawn.type_to_select))
-            .show_ui(ui, |ui| {
-                for cell_type in CellType::iter() {
-                    if ui
-                        .selectable_value(
-                            &mut cell_type_to_spawn.type_to_select,
-                            cell_type.clone(),
-                            format!("{:?}", cell_type),
-                        )
-                        .clicked()
-                    {
-                        info!("Selected: {:?}", cell_type_to_spawn.type_to_select);
-                    }
-                }
-            });
+    let _show = egui::Window::new("Cell Type").show(contexts.ctx_mut(), |ui| {
+        match cell_type_to_spawn.selected.clone() {
+            Some(mut selected) => {
+                egui::ComboBox::from_label("Select one!")
+                    .selected_text(format!("{}", selected.name))
+                    .show_ui(ui, |ui| {
+                        for cell_asset in cell_assets.handles.iter() {
+                            if ui
+                                .selectable_value(
+                                    &mut selected,
+                                    Selected {
+                                        name: cell_asset.0.to_string(),
+                                        handle: cell_asset.1.clone(),
+                                    },
+                                    format!("{:?}", cell_asset.0),
+                                )
+                                .clicked()
+                            {
+                                info!("Selected: {}", cell_asset.0);
+                            }
+                        }
+                    });
+            }
+            None => {
+                return;
+            }
+        }
     });
 }
 
@@ -71,17 +80,17 @@ pub fn check_is_empty_on_mouse_pos(
 ) {
     let grid_pos = position_to_cell_coords(cursor_positions.pos);
     let value = world.get(grid_pos.0, grid_pos.1);
+    let window = egui::Window::new("Is empty on mouse position:");
     match value {
         Some(e) => {
             if let Ok(cell) = cells_query.get(e) {
-                egui::Window::new("Is empty on mouse position:").show(contexts.ctx_mut(), |ui| {
-                    ui.label(format!("{:?}", cell.cell_type))
+                window.show(contexts.ctx_mut(), |ui| {
+                    ui.label(format!("{}", cell.cell_type))
                 });
             }
         }
         None => {
-            egui::Window::new("Is empty on mouse position:")
-                .show(contexts.ctx_mut(), |ui| ui.label("empty"));
+            window.show(contexts.ctx_mut(), |ui| ui.label("empty"));
         }
     }
 }
@@ -90,7 +99,7 @@ pub fn cell_list_ui(query: Query<(&Cell, &Transform)>, mut contexts: EguiContext
     egui::Window::new("Cells list:").show(contexts.ctx_mut(), |ui| {
         egui::ScrollArea::vertical().show(ui, |ui| {
             for (cell, transform) in query.iter() {
-                ui.label(format!("{:?}, {:?}", cell, transform.translation));
+                ui.label(format!("{}, {:?}", cell.cell_type, transform.translation));
             }
         });
     });
