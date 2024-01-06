@@ -63,6 +63,6 @@ impl AssetLoader for CellAssetLoader {
     }
 
     fn extensions(&self) -> &[&str] {
-        &["custom"]
+        &["cell"]
     }
 }

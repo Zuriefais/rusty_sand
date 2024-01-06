@@ -1,11 +1,12 @@
 // setup.rs
 use crate::{
+    assets::{CellAsset, CellAssetLoader},
     components::MainCamera,
     enums::CellPhysicsType,
     events::{RemoveCellEvent, SpawnCellEvent},
     resources::{
-        cell_world::CellWorld, CellMesh, CellTypeToSpawn, CursorPosition, EguiHoverState,
-        SimulateWorldState, CellAssets,
+        cell_world::CellWorld, CellAssets, CellMesh, CellTypeToSpawn, CursorPosition,
+        EguiHoverState, SimulateWorldState,
     },
     systems::{
         camera::{move_camera, zoom_camera},
@@ -18,9 +19,9 @@ use crate::{
             spawn_cell_type,
         },
         window_management::set_window_icon,
-    }, assets::CellAsset,
+    },
 };
-use bevy::{prelude::*, window::PresentMode, utils::HashMap};
+use bevy::{prelude::*, utils::HashMap, window::PresentMode};
 
 use bevy_egui::EguiPlugin;
 use bevy_enum_filter::prelude::AddEnumFilter;
@@ -64,14 +65,15 @@ impl Plugin for SetupPlugin {
             .add_systems(Update, show_cell_count)
             .add_systems(Update, process_loaded_assets)
             .init_asset::<CellAsset>()
+            .register_asset_loader(CellAssetLoader)
             .add_systems(
                 FixedUpdate,
                 (
                     spawn_cell,
                     remove_cell,
-                    check_is_empty_on_mouse_pos,
                     //cell_list_ui,
                     check_egui_hover,
+                    check_is_empty_on_mouse_pos
                 ),
             )
             .add_event::<SpawnCellEvent>()
@@ -82,15 +84,24 @@ impl Plugin for SetupPlugin {
 fn setup(mut commands: Commands, meshes: ResMut<Assets<Mesh>>, asset_server: Res<AssetServer>) {
     commands.spawn((Camera2dBundle::default(), MainCamera));
     commands.insert_resource(CellMesh::from_world(meshes));
-    
-    let paths = vec!["cells/blood_stone.ron", "cells/blood.ron", "cells/sand.ron", "cells/stone.ron", "cells/water.ron"];
+
+    let paths = vec![
+        "cells/blood_stone.cell",
+        "cells/blood.cell",
+        "cells/sand.cell",
+        "cells/stone.cell",
+        "cells/water.cell",
+    ];
 
     for path in paths {
         let asset_handle = asset_server.load::<CellAsset>(path);
         commands.spawn_empty().insert(asset_handle);
     }
-}
 
+    commands.insert_resource(CellAssets {
+        handles: HashMap::new(),
+    });
+}
 
 fn process_loaded_assets(
     mut commands: Commands,
@@ -101,8 +112,10 @@ fn process_loaded_assets(
     for (entity, handle) in query.iter() {
         if let Some(cell_asset) = cell_assets_storage.get(handle) {
             // Now you have access to cell_asset data like cell_type_name
-            cell_assets.handles.insert(cell_asset.cell_type_name.clone(), handle.clone());
-
+            cell_assets
+                .handles
+                .insert(cell_asset.cell_type_name.clone(), handle.clone());
+            info!("{:?}", cell_asset);
             // Remove the entity to avoid reprocessing
             commands.entity(entity).despawn();
         }

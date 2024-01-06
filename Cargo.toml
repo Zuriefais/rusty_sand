@@ -31,9 +31,6 @@ bevy = {version = "0.12", features = ["multi-threaded", "dynamic_linking", "trac
 [target.'cfg(not(target_os = "linux"))'.dependencies]
 bevy = {version = "0.12", features = ["multi-threaded", "trace"]}
 
-[patch."https://github.com/bevyengine/bevy"]
-winit = "0.29.4"
-
 [toolchain]
 channel = "nightly"
 

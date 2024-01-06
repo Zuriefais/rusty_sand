@@ -1,5 +1,0 @@
-CellAsset(
-    cell_physics_behavior: Fluid,
-    color: "4E5754",
-    cell_type_name: "Solid",
-)
