@@ -1,12 +1,12 @@
 // setup.rs
 use crate::{
     assets::{CellAsset, CellAssetLoader, ConfigAsset, ConfigAssetLoader},
-    components::{MainCamera, Cell},
+    components::{Cell, MainCamera},
     enums::CellPhysicsType,
     events::{RemoveCellEvent, SpawnCellEvent},
     resources::{
         cell_world::CellWorld, CellAssets, CellMesh, CellTypeToSpawn, CursorPosition,
-        EguiHoverState, SimulateWorldState, Selected,
+        EguiHoverState, Selected, SimulateWorldState,
     },
     systems::{
         camera::{move_camera, zoom_camera},
@@ -35,16 +35,19 @@ impl Plugin for SetupPlugin {
         app.add_systems(Startup, set_window_icon)
             .add_systems(Startup, setup)
             .insert_resource(ClearColor(Color::rgb(0.0, 0.170, 0.253)))
-            .add_plugins(DefaultPlugins.set(WindowPlugin {
-                primary_window: Some(Window {
-                    title: "rusty sand".into(),
-                    resolution: (1280., 720.).into(),
-                    present_mode: PresentMode::AutoVsync,
-                    fit_canvas_to_parent: true,
-                    ..default()
-                }),
-                ..default()
-            }))
+            .add_plugins(
+                DefaultPlugins
+                    .set(WindowPlugin {
+                        primary_window: Some(Window {
+                            title: "rusty sand".into(),
+                            resolution: (1280., 720.).into(),
+                            present_mode: PresentMode::AutoVsync,
+                            fit_canvas_to_parent: true,
+                            ..default()
+                        }),
+                        ..default()
+                    })
+            )
             .add_plugins(EguiPlugin)
             .add_enum_filter::<CellPhysicsType>()
             .add_systems(Update, spawn_cell_type)
@@ -60,6 +63,7 @@ impl Plugin for SetupPlugin {
             .insert_resource(SimulateWorldState::default())
             .register_type::<SimulateWorldState>()
             .register_type::<Cell>()
+            .register_type::<CellAssets>()
             .add_plugins(FpsCounterPlugin)
             .add_systems(Update, spawn_cell_on_touch)
             .add_systems(Update, zoom_camera)
@@ -113,7 +117,7 @@ fn load_cell_assets(
             }
         }
         commands.entity(entity.0).despawn();
-    }  
+    }
 }
 
 fn process_loaded_assets(
@@ -121,7 +125,7 @@ fn process_loaded_assets(
     query: Query<(Entity, &Handle<CellAsset>)>,
     mut cell_assets: ResMut<CellAssets>,
     cell_assets_storage: Res<Assets<CellAsset>>,
-    mut cell_type: ResMut<CellTypeToSpawn>
+    mut cell_type: ResMut<CellTypeToSpawn>,
 ) {
     for (entity, handle) in query.iter() {
         if let Some(cell_asset) = cell_assets_storage.get(handle) {
@@ -131,7 +135,10 @@ fn process_loaded_assets(
                 .insert(cell_asset.cell_type_name.clone(), handle.clone());
             info!("{:?}", cell_asset);
             // Remove the entity to avoid reprocessing
-            cell_type.selected = Some(Selected { name: cell_asset.cell_type_name.clone(), handle: handle.clone() });
+            cell_type.selected = Some(Selected {
+                name: cell_asset.cell_type_name.clone(),
+                handle: handle.clone(),
+            });
             commands.entity(entity).despawn();
         }
     }

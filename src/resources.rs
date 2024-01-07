@@ -29,7 +29,8 @@ impl EguiHoverState {
     }
 }
 
-#[derive(Resource)]
+#[derive(Reflect, Resource, Default, InspectorOptions)]
+#[reflect(Resource, InspectorOptions)]
 pub struct CellAssets {
     pub handles: HashMap<String, Handle<CellAsset>>,
 }

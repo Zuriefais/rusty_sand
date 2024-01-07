@@ -7,38 +7,35 @@ use bevy_egui::{egui, EguiContexts};
 
 pub fn spawn_cell_type(
     mut contexts: EguiContexts,
-    cell_type_to_spawn: ResMut<CellTypeToSpawn>,
+    mut cell_type_to_spawn: ResMut<CellTypeToSpawn>, // Ensure this is mutable
     cell_assets: Res<CellAssets>,
 ) {
     let _show = egui::Window::new("Cell Type").show(contexts.ctx_mut(), |ui| {
-        match cell_type_to_spawn.selected.clone() {
-            Some(mut selected) => {
-                egui::ComboBox::from_label("Select one!")
-                    .selected_text(format!("{}", selected.name))
-                    .show_ui(ui, |ui| {
-                        for cell_asset in cell_assets.handles.iter() {
-                            if ui
-                                .selectable_value(
-                                    &mut selected,
-                                    Selected {
-                                        name: cell_asset.0.to_string(),
-                                        handle: cell_asset.1.clone(),
-                                    },
-                                    format!("{:?}", cell_asset.0),
-                                )
-                                .clicked()
-                            {
-                                info!("Selected: {}", cell_asset.0);
-                            }
+        if let Some(mut selected) = cell_type_to_spawn.selected.clone() { // Make sure selected is mutable
+            egui::ComboBox::from_label("Select one!")
+                .selected_text(format!("{}", selected.name))
+                .show_ui(ui, |ui| {
+                    for cell_asset in cell_assets.handles.iter() {
+                        if ui
+                            .selectable_value(
+                                &mut selected, // Mutable reference
+                                Selected {
+                                    name: cell_asset.0.to_string(),
+                                    handle: cell_asset.1.clone(),
+                                },
+                                format!("{:?}", cell_asset.0),
+                            )
+                            .clicked()
+                        {
+                            cell_type_to_spawn.selected = Some(selected.clone()); // Update the state
+                            info!("Selected: {}", cell_asset.0);
                         }
-                    });
-            }
-            None => {
-                return;
-            }
+                    }
+                });
         }
     });
 }
+
 
 pub fn my_cursor_system(
     windows: Query<&Window>,

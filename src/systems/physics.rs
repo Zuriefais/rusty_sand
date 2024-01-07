@@ -114,7 +114,7 @@ pub fn blood_stone_physics(
         }
         ev_spawn_cell.send(SpawnCellEvent {
             pos: Vec2::new(pos.x, pos.y),
-            cell_type: cell_assets.handles["blood"].clone(),
+            cell_type: cell_assets.handles["Blood"].clone(),
         });
     }
 }
