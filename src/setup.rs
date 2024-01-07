@@ -1,12 +1,12 @@
 // setup.rs
 use crate::{
-    assets::{CellAsset, CellAssetLoader},
-    components::MainCamera,
+    assets::{CellAsset, CellAssetLoader, ConfigAsset, ConfigAssetLoader},
+    components::{MainCamera, Cell},
     enums::CellPhysicsType,
     events::{RemoveCellEvent, SpawnCellEvent},
     resources::{
         cell_world::CellWorld, CellAssets, CellMesh, CellTypeToSpawn, CursorPosition,
-        EguiHoverState, SimulateWorldState,
+        EguiHoverState, SimulateWorldState, Selected,
     },
     systems::{
         camera::{move_camera, zoom_camera},
@@ -15,8 +15,8 @@ use crate::{
         },
         physics::{blood_stone_physics, fluid_physics, sand_physics},
         ui_systems::{
-            check_egui_hover, check_is_empty_on_mouse_pos, my_cursor_system, show_cell_count,
-            spawn_cell_type,
+            cell_list_ui, check_egui_hover, check_is_empty_on_mouse_pos, my_cursor_system,
+            show_cell_count, spawn_cell_type,
         },
         window_management::set_window_icon,
     },
@@ -59,21 +59,25 @@ impl Plugin for SetupPlugin {
             .insert_resource(CursorPosition::default())
             .insert_resource(SimulateWorldState::default())
             .register_type::<SimulateWorldState>()
+            .register_type::<Cell>()
             .add_plugins(FpsCounterPlugin)
             .add_systems(Update, spawn_cell_on_touch)
             .add_systems(Update, zoom_camera)
             .add_systems(Update, show_cell_count)
             .add_systems(Update, process_loaded_assets)
+            .add_systems(Update, load_cell_assets)
             .init_asset::<CellAsset>()
+            .init_asset::<ConfigAsset>()
             .register_asset_loader(CellAssetLoader)
+            .register_asset_loader(ConfigAssetLoader)
             .add_systems(
                 FixedUpdate,
                 (
                     spawn_cell,
                     remove_cell,
-                    //cell_list_ui,
+                    cell_list_ui,
                     check_egui_hover,
-                    check_is_empty_on_mouse_pos
+                    check_is_empty_on_mouse_pos,
                 ),
             )
             .add_event::<SpawnCellEvent>()
@@ -85,22 +89,31 @@ fn setup(mut commands: Commands, meshes: ResMut<Assets<Mesh>>, asset_server: Res
     commands.spawn((Camera2dBundle::default(), MainCamera));
     commands.insert_resource(CellMesh::from_world(meshes));
 
-    let paths = vec![
-        "cells/blood_stone.cell",
-        "cells/blood.cell",
-        "cells/sand.cell",
-        "cells/stone.cell",
-        "cells/water.cell",
-    ];
-
-    for path in paths {
-        let asset_handle = asset_server.load::<CellAsset>(path);
-        commands.spawn_empty().insert(asset_handle);
-    }
-
     commands.insert_resource(CellAssets {
         handles: HashMap::new(),
     });
+
+    info!("loading config asset.....");
+    let config_handle = asset_server.load::<ConfigAsset>("config.config");
+    commands.spawn_empty().insert(config_handle);
+}
+
+fn load_cell_assets(
+    config_handle_entities: Query<(Entity, &Handle<ConfigAsset>)>,
+    config_assets: Res<Assets<ConfigAsset>>,
+    asset_server: Res<AssetServer>,
+    mut commands: Commands,
+) {
+    for entity in config_handle_entities.iter() {
+        if let Some(config) = config_assets.get(entity.1) {
+            for path in &config.cell_paths {
+                info!("loading cell at path: {}", path);
+                let asset_handle = asset_server.load::<CellAsset>(path);
+                commands.spawn_empty().insert(asset_handle);
+            }
+        }
+        commands.entity(entity.0).despawn();
+    }  
 }
 
 fn process_loaded_assets(
@@ -108,6 +121,7 @@ fn process_loaded_assets(
     query: Query<(Entity, &Handle<CellAsset>)>,
     mut cell_assets: ResMut<CellAssets>,
     cell_assets_storage: Res<Assets<CellAsset>>,
+    mut cell_type: ResMut<CellTypeToSpawn>
 ) {
     for (entity, handle) in query.iter() {
         if let Some(cell_asset) = cell_assets_storage.get(handle) {
@@ -117,6 +131,7 @@ fn process_loaded_assets(
                 .insert(cell_asset.cell_type_name.clone(), handle.clone());
             info!("{:?}", cell_asset);
             // Remove the entity to avoid reprocessing
+            cell_type.selected = Some(Selected { name: cell_asset.cell_type_name.clone(), handle: handle.clone() });
             commands.entity(entity).despawn();
         }
     }

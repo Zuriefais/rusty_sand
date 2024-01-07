@@ -1,3 +1,4 @@
+use crate::enums::CellPhysicsType;
 use bevy::asset::io::Reader;
 use bevy::asset::{AsyncReadExt, LoadedAsset};
 use bevy::utils::thiserror;
@@ -7,9 +8,8 @@ use bevy::{
     utils::BoxedFuture,
 };
 use serde::{Deserialize, Deserializer};
+use std::str;
 use thiserror::Error;
-
-use crate::enums::CellPhysicsType;
 
 #[derive(Asset, TypePath, Debug, Deserialize)]
 pub struct CellAsset {
@@ -64,5 +64,45 @@ impl AssetLoader for CellAssetLoader {
 
     fn extensions(&self) -> &[&str] {
         &["cell"]
+    }
+}
+
+#[derive(Asset, TypePath, Debug, Deserialize)]
+pub struct ConfigAsset {
+    pub cell_paths: Vec<String>,
+}
+
+#[non_exhaustive]
+#[derive(Debug, Error)]
+pub enum ConfigAssetLoaderError {
+    #[error("Could not load asset: {0}")]
+    Io(#[from] std::io::Error),
+    #[error("Could not parse TOML: {0}")]
+    RonSpannedError(#[from] ron::error::SpannedError),
+}
+
+#[derive(Default)]
+pub struct ConfigAssetLoader;
+
+impl AssetLoader for ConfigAssetLoader {
+    type Asset = ConfigAsset;
+    type Settings = ();
+    type Error = CellAssetLoaderError;
+    fn load<'a>(
+        &'a self,
+        reader: &'a mut Reader,
+        _settings: &'a (),
+        _load_context: &'a mut LoadContext,
+    ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
+        Box::pin(async move {
+            let mut bytes = Vec::new();
+            reader.read_to_end(&mut bytes).await?;
+            let custom_asset = ron::de::from_bytes::<ConfigAsset>(&bytes)?;
+            Ok(custom_asset)
+        })
+    }
+
+    fn extensions(&self) -> &[&str] {
+        &["config"]
     }
 }
