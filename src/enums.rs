@@ -7,7 +7,7 @@ use serde::Deserialize;
 pub enum CellPhysicsType {
     Sand,
     Fluid,
-    BloodStone,
+    Tap(String),
     Solid,
 }
 

@@ -1,0 +1,5 @@
+CellAsset(
+    cell_physics_behavior: Tap("Sand"),
+    color: "ffffff",
+    cell_type_name: "Just tap",
+)

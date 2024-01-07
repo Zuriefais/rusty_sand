@@ -11,7 +11,8 @@ pub fn spawn_cell_type(
     cell_assets: Res<CellAssets>,
 ) {
     let _show = egui::Window::new("Cell Type").show(contexts.ctx_mut(), |ui| {
-        if let Some(mut selected) = cell_type_to_spawn.selected.clone() { // Make sure selected is mutable
+        if let Some(mut selected) = cell_type_to_spawn.selected.clone() {
+            // Make sure selected is mutable
             egui::ComboBox::from_label("Select one!")
                 .selected_text(format!("{}", selected.name))
                 .show_ui(ui, |ui| {
@@ -35,7 +36,6 @@ pub fn spawn_cell_type(
         }
     });
 }
-
 
 pub fn my_cursor_system(
     windows: Query<&Window>,

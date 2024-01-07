@@ -1,0 +1,5 @@
+CellAsset(
+    cell_physics_behavior: Solid,
+    color: "#ffd6df",
+    cell_type_name: "DonutStone",
+)

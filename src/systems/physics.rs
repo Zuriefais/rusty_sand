@@ -1,4 +1,4 @@
-use crate::enums::cell_physics_type_filters;
+use crate::enums::{cell_physics_type_filters, CellPhysicsType};
 use crate::resources::CellAssets;
 use crate::{
     enums::CELL_SIZE,
@@ -93,8 +93,8 @@ pub fn fluid_physics(
     }
 }
 
-pub fn blood_stone_physics(
-    mut query: Query<&mut Transform, With<Enum!(CellPhysicsType::BloodStone)>>,
+pub fn tap_physics(
+    mut query: Query<(&mut Transform, &CellPhysicsType), With<Enum!(CellPhysicsType::Tap)>>,
     cell_world: ResMut<CellWorld>,
     mut ev_spawn_cell: EventWriter<SpawnCellEvent>,
     state: Res<SimulateWorldState>,
@@ -104,17 +104,22 @@ pub fn blood_stone_physics(
         return;
     }
 
-    for transform in query.iter_mut() {
-        let mut pos = transform.translation;
-        pos.y -= CELL_SIZE.y;
+    for (transform, tap) in query.iter_mut() {
+        match tap {
+            CellPhysicsType::Tap(spawn_type) => {
+                let mut pos = transform.translation;
+                pos.y -= CELL_SIZE.y;
 
-        let grid_pos = position_to_cell_coords(pos);
-        if !cell_world.is_cell_empty(grid_pos) {
-            continue;
+                let grid_pos = position_to_cell_coords(pos);
+                if !cell_world.is_cell_empty(grid_pos) {
+                    continue;
+                }
+                ev_spawn_cell.send(SpawnCellEvent {
+                    pos: Vec2::new(pos.x, pos.y),
+                    cell_type: cell_assets.handles[spawn_type].clone(),
+                });
+            }
+            _ => return,
         }
-        ev_spawn_cell.send(SpawnCellEvent {
-            pos: Vec2::new(pos.x, pos.y),
-            cell_type: cell_assets.handles["Blood"].clone(),
-        });
     }
 }

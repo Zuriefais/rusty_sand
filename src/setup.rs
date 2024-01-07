@@ -13,7 +13,7 @@ use crate::{
         cell_management::{
             remove_cell, spawn_cell, spawn_cell_on_touch, spawn_or_remove_cell_on_click,
         },
-        physics::{blood_stone_physics, fluid_physics, sand_physics},
+        physics::{fluid_physics, sand_physics, tap_physics},
         ui_systems::{
             cell_list_ui, check_egui_hover, check_is_empty_on_mouse_pos, my_cursor_system,
             show_cell_count, spawn_cell_type,
@@ -35,26 +35,23 @@ impl Plugin for SetupPlugin {
         app.add_systems(Startup, set_window_icon)
             .add_systems(Startup, setup)
             .insert_resource(ClearColor(Color::rgb(0.0, 0.170, 0.253)))
-            .add_plugins(
-                DefaultPlugins
-                    .set(WindowPlugin {
-                        primary_window: Some(Window {
-                            title: "rusty sand".into(),
-                            resolution: (1280., 720.).into(),
-                            present_mode: PresentMode::AutoVsync,
-                            fit_canvas_to_parent: true,
-                            ..default()
-                        }),
-                        ..default()
-                    })
-            )
+            .add_plugins(DefaultPlugins.set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "rusty sand".into(),
+                    resolution: (1280., 720.).into(),
+                    present_mode: PresentMode::AutoVsync,
+                    fit_canvas_to_parent: true,
+                    ..default()
+                }),
+                ..default()
+            }))
             .add_plugins(EguiPlugin)
             .add_enum_filter::<CellPhysicsType>()
             .add_systems(Update, spawn_cell_type)
             .add_systems(Update, my_cursor_system)
             .add_systems(Update, spawn_or_remove_cell_on_click)
             .add_plugins(WorldInspectorPlugin::new())
-            .add_systems(Update, (sand_physics, fluid_physics, blood_stone_physics))
+            .add_systems(Update, (sand_physics, fluid_physics, tap_physics))
             .add_systems(Update, move_camera)
             .insert_resource(CellWorld::default())
             .insert_resource(CellTypeToSpawn::default())
@@ -79,9 +76,9 @@ impl Plugin for SetupPlugin {
                 (
                     spawn_cell,
                     remove_cell,
-                    cell_list_ui,
+                    //cell_list_ui,
                     check_egui_hover,
-                    check_is_empty_on_mouse_pos,
+                    //check_is_empty_on_mouse_pos,
                 ),
             )
             .add_event::<SpawnCellEvent>()

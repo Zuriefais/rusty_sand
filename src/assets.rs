@@ -1,22 +1,26 @@
 use crate::enums::CellPhysicsType;
 use bevy::asset::io::Reader;
-use bevy::asset::{AsyncReadExt, LoadedAsset};
+use bevy::asset::{AsyncReadExt, LoadedAsset, ReflectAsset};
+use bevy::reflect::TypeUuid;
 use bevy::utils::thiserror;
 use bevy::{
     asset::{AssetLoader, LoadContext},
     prelude::*,
     utils::BoxedFuture,
 };
+use bevy_inspector_egui::InspectorOptions;
 use serde::{Deserialize, Deserializer};
 use std::str;
 use thiserror::Error;
 
-#[derive(Asset, TypePath, Debug, Deserialize)]
+#[uuid = "5b68f25a-835d-45f2-855d-94613a2da2fd"]
+#[derive(Asset, TypePath, Debug, Deserialize, InspectorOptions, TypeUuid)]
 pub struct CellAsset {
     pub cell_physics_behavior: CellPhysicsType,
     #[serde(deserialize_with = "hex_to_color")]
     pub color: Color,
     pub cell_type_name: String,
+    //pub density: usize,
     #[serde(skip)]
     pub material: Handle<ColorMaterial>,
 }
