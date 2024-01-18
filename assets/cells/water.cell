@@ -2,4 +2,5 @@ CellAsset(
     cell_physics_behavior: Fluid,
     color: "2f5eb8",
     cell_type_name: "Water",
+    density: 1000,
 )

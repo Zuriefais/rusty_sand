@@ -20,9 +20,14 @@ pub struct CellAsset {
     #[serde(deserialize_with = "hex_to_color")]
     pub color: Color,
     pub cell_type_name: String,
-    //pub density: usize,
+    #[serde(default = "default_i32")]
+    pub density: i32,
     #[serde(skip)]
     pub material: Handle<ColorMaterial>,
+}
+
+fn default_i32() -> i32 {
+    1 // Your default value here
 }
 
 fn hex_to_color<'de, D>(deserializer: D) -> Result<Color, D::Error>

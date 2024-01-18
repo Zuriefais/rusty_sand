@@ -35,16 +35,19 @@ impl Plugin for SetupPlugin {
         app.add_systems(Startup, set_window_icon)
             .add_systems(Startup, setup)
             .insert_resource(ClearColor(Color::rgb(0.0, 0.170, 0.253)))
-            .add_plugins(DefaultPlugins.set(WindowPlugin {
-                primary_window: Some(Window {
-                    title: "rusty sand".into(),
-                    resolution: (1280., 720.).into(),
-                    present_mode: PresentMode::AutoVsync,
-                    fit_canvas_to_parent: true,
-                    ..default()
-                }),
-                ..default()
-            }))
+            .add_plugins(
+                DefaultPlugins
+                    .set(WindowPlugin {
+                        primary_window: Some(Window {
+                            title: "rusty sand".into(),
+                            resolution: (1280., 720.).into(),
+                            present_mode: PresentMode::AutoVsync,
+                            fit_canvas_to_parent: true,
+                            ..default()
+                        }),
+                        ..default()
+                    }),
+            )
             .add_plugins(EguiPlugin)
             .add_enum_filter::<CellPhysicsType>()
             .add_systems(Update, spawn_cell_type)
