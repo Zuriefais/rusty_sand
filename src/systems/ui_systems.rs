@@ -63,9 +63,14 @@ pub fn my_cursor_system(
     }
 }
 
-pub fn show_cell_count(mut contexts: EguiContexts, cell_count: ResMut<CellWorld>) {
+pub fn show_cell_count(mut contexts: EguiContexts, world: ResMut<CellWorld>) {
+    let mut cell_count = 0;
+    for chunk in &world.chunks {
+        cell_count += chunk.1.cell_count;
+    }
     egui::Window::new("Cell count").show(contexts.ctx_mut(), |ui| {
-        ui.label(cell_count.cell_count.to_string())
+        ui.label(cell_count.to_string());
+        ui.label(world.chunk_count.to_string());
     });
 }
 
@@ -76,7 +81,7 @@ pub fn check_is_empty_on_mouse_pos(
     cells_query: Query<&Cell>,
 ) {
     let grid_pos = position_to_cell_coords(cursor_positions.pos);
-    let value = world.get(grid_pos.0, grid_pos.1);
+    let value = world.get(grid_pos);
     let is_empty_text: String = match value {
         Some(e) => {
             if let Ok(cell) = cells_query.get(e) {

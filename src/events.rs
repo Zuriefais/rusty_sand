@@ -10,5 +10,5 @@ pub struct SpawnCellEvent {
 
 #[derive(Event)]
 pub struct RemoveCellEvent {
-    pub pos: (isize, isize),
+    pub pos: IVec2,
 }

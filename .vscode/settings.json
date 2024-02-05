@@ -9,6 +9,7 @@
         "bytemuck",
         "despawn",
         "egui",
+        "fastrand",
         "hashbrown",
         "lifetimeless",
         "thiserror",

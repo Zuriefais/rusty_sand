@@ -81,8 +81,7 @@ pub fn spawn_cell(
             Some(cell_asset) => {
                 if cell_world.is_cell_empty(grid_pos) {
                     cell_world.insert(
-                        grid_pos.0,
-                        grid_pos.1,
+                        grid_pos,
                         Some(
                             commands
                                 .spawn((
@@ -119,10 +118,10 @@ pub fn remove_cell(
     mut world: ResMut<CellWorld>,
 ) {
     for event in ev_remove_cell.read() {
-        let entity = world.get(event.pos.0, event.pos.1);
+        let entity = world.get(event.pos);
         match entity {
             Some(entity) => {
-                world.insert(event.pos.0, event.pos.1, None);
+                world.insert(event.pos, None);
                 commands.entity(entity).despawn();
             }
             None => {

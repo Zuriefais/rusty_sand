@@ -53,9 +53,48 @@ impl XY for Vec3 {
     }
 }
 
-pub fn position_to_cell_coords<T: XY>(pos: T) -> (isize, isize) {
-    (
-        (pos.x() / CELL_SIZE.x).floor() as isize,
-        (pos.y() / CELL_SIZE.y).floor() as isize,
+pub trait XYI {
+    fn x(&self) -> i32;
+    fn y(&self) -> i32;
+}
+
+impl XYI for IVec2 {
+    fn x(&self) -> i32 {
+        return self.x;
+    }
+
+    fn y(&self) -> i32 {
+        return self.y;
+    }
+}
+
+impl XYI for (i32, i32) {
+    fn x(&self) -> i32 {
+        self.0
+    }
+
+    fn y(&self) -> i32 {
+        self.1
+    }
+}
+
+impl dyn XYI {
+    pub fn to_ivec2(&self) -> IVec2 {
+        return IVec2::new(self.x(), self.y());
+    }
+}
+
+pub fn ivec2_to_vec3(vec: IVec2) -> Vec3 {
+    Vec3 {
+        x: vec.x as f32,
+        y: vec.y as f32,
+        z: 0.0,
+    }
+}
+
+pub fn position_to_cell_coords<T: XY>(pos: T) -> IVec2 {
+    IVec2::new(
+        (pos.x() / CELL_SIZE.x).floor() as i32,
+        (pos.y() / CELL_SIZE.y).floor() as i32,
     )
 }
