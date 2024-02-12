@@ -24,26 +24,27 @@ pub fn sand_physics(
         return;
     }
 
-    for (mut chunk_pos, mut chunk) in &cell_world.chunks {
-        for mut cell_option in chunk.cells {
+    for (chunk_pos, chunk) in &cell_world.chunks {
+        let mut to_swap = Vec::new();
+
+        for cell_option in chunk.cells {
             if let Some(cell_entity) = cell_option {
                 let cell = query.get_mut(cell_entity);
 
                 if let Ok((entity, mut transform)) = cell {
-                    let chunk_pos = Chunk::global_pos_to_chunk_pos(position_to_cell_coords(
+                    let cell_pos = Chunk::global_pos_to_chunk_pos(position_to_cell_coords(
                         transform.translation,
                     ));
 
-                    let mut pos_below = chunk_pos;
+                    let mut pos_below = cell_pos;
                     pos_below.y -= 1;
-
-                    let is_empty_below = chunk.get(pos_below).is_none();
 
                     if Chunk::check_bounds(pos_below) {
                         let cell_below_option = chunk.get_mut(pos_below);
 
                         if cell_below_option.is_none() {
-                            transform.translation.y-=CELL_SIZE.y;
+                            transform.translation.y -= CELL_SIZE.y;
+                            to_swap.push((cell_pos, pos_below, entity));
                             continue;
                         }
                     } else {
@@ -52,8 +53,13 @@ pub fn sand_physics(
                 }
             }
         }
+        for (old_pos, new_pos, entity) in to_swap {
+            chunk.insert(old_pos, None);
+            chunk.insert(new_pos, Some(entity));
+        }
     }
 }
+// Update the chunk's cells based on movements calculated above
 
 pub fn fluid_physics(
     mut query: Query<(Entity, &mut Transform), With<Enum!(CellPhysicsType::Fluid)>>,

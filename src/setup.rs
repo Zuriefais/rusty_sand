@@ -71,36 +71,29 @@ impl Plugin for SetupPlugin {
             .init_asset::<ConfigAsset>()
             .register_asset_loader(CellAssetLoader)
             .register_asset_loader(ConfigAssetLoader)
-            .add_systems(
-                FixedUpdate,
-                (
-                    spawn_cell,
-                    remove_cell,
-                    check_egui_hover,
-                ),
-            )
+            .add_systems(FixedUpdate, (spawn_cell, remove_cell, check_egui_hover))
             .add_event::<SpawnCellEvent>()
             .add_event::<RemoveCellEvent>();
 
-            let args: Vec<String> = env::args().collect();
+        let args: Vec<String> = env::args().collect();
 
-            for arg in args.iter() {
-                match arg.as_str() {
-                    "cell_list" => {
-                        app.add_systems(Update, cell_list_ui);
-                    },
-                    "world_inspector" => {
-                        app.add_plugins(WorldInspectorPlugin::new());
-                    },
-                    "cell_count" => {
-                        app.add_systems(Update, show_cell_count);
-                    },
-                    "is_empty" => {
-                        app.add_systems(Update, check_is_empty_on_mouse_pos);
-                    },
-                    _ => info!("{}", ("this arg not supported ".to_owned()+arg.as_str())),
+        for arg in args.iter() {
+            match arg.as_str() {
+                "cell_list" => {
+                    app.add_systems(Update, cell_list_ui);
                 }
+                "world_inspector" => {
+                    app.add_plugins(WorldInspectorPlugin::new());
+                }
+                "cell_count" => {
+                    app.add_systems(Update, show_cell_count);
+                }
+                "is_empty" => {
+                    app.add_systems(Update, check_is_empty_on_mouse_pos);
+                }
+                _ => info!("{}", ("this arg not supported ".to_owned() + arg.as_str())),
             }
+        }
     }
 }
 

@@ -1,6 +1,9 @@
 use bevy::{prelude::*, utils::HashMap};
 
-use crate::{enums::{CHUNK_SIZE, CHUNK_SIZE_LEN}, utils::ivec2_to_vec3};
+use crate::{
+    enums::{CHUNK_SIZE, CHUNK_SIZE_LEN},
+    utils::ivec2_to_vec3,
+};
 pub struct Chunk {
     pub cells: [Option<Entity>; CHUNK_SIZE_LEN],
     pub cell_count: usize,
@@ -117,8 +120,16 @@ impl CellWorld {
 
     fn calculate_chunk_pos(pos: IVec2) -> IVec2 {
         // Adjust the position before division to handle negative coordinates correctly
-        let div_x = if pos.x < 0 { (pos.x + 1 - CHUNK_SIZE.x) / CHUNK_SIZE.x } else { pos.x / CHUNK_SIZE.x };
-        let div_y = if pos.y < 0 { (pos.y + 1 - CHUNK_SIZE.y) / CHUNK_SIZE.y } else { pos.y / CHUNK_SIZE.y };
+        let div_x = if pos.x < 0 {
+            (pos.x + 1 - CHUNK_SIZE.x) / CHUNK_SIZE.x
+        } else {
+            pos.x / CHUNK_SIZE.x
+        };
+        let div_y = if pos.y < 0 {
+            (pos.y + 1 - CHUNK_SIZE.y) / CHUNK_SIZE.y
+        } else {
+            pos.y / CHUNK_SIZE.y
+        };
         IVec2::new(div_x, div_y)
     }
 }
