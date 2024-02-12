@@ -1,3 +1,5 @@
+use std::env;
+
 // setup.rs
 use crate::{
     assets::{CellAsset, CellAssetLoader, ConfigAsset, ConfigAssetLoader},
@@ -50,7 +52,6 @@ impl Plugin for SetupPlugin {
             .add_systems(Update, spawn_cell_type)
             .add_systems(Update, my_cursor_system)
             .add_systems(Update, spawn_or_remove_cell_on_click)
-            .add_plugins(WorldInspectorPlugin::new())
             .add_systems(Update, (sand_physics, fluid_physics, tap_physics))
             .add_systems(Update, move_camera)
             .insert_resource(CellWorld::default())
@@ -64,7 +65,6 @@ impl Plugin for SetupPlugin {
             .add_plugins(FpsCounterPlugin)
             .add_systems(Update, spawn_cell_on_touch)
             .add_systems(Update, zoom_camera)
-            .add_systems(Update, show_cell_count)
             .add_systems(Update, process_loaded_assets)
             .add_systems(Update, load_cell_assets)
             .init_asset::<CellAsset>()
@@ -76,13 +76,31 @@ impl Plugin for SetupPlugin {
                 (
                     spawn_cell,
                     remove_cell,
-                    //cell_list_ui,
                     check_egui_hover,
-                    check_is_empty_on_mouse_pos,
                 ),
             )
             .add_event::<SpawnCellEvent>()
             .add_event::<RemoveCellEvent>();
+
+            let args: Vec<String> = env::args().collect();
+
+            for arg in args.iter() {
+                match arg.as_str() {
+                    "cell_list" => {
+                        app.add_systems(Update, cell_list_ui);
+                    },
+                    "world_inspector" => {
+                        app.add_plugins(WorldInspectorPlugin::new());
+                    },
+                    "cell_count" => {
+                        app.add_systems(Update, show_cell_count);
+                    },
+                    "is_empty" => {
+                        app.add_systems(Update, check_is_empty_on_mouse_pos);
+                    },
+                    _ => info!("{}", ("this arg not supported ".to_owned()+arg.as_str())),
+                }
+            }
     }
 }
 
