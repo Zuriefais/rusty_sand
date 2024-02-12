@@ -1,4 +1,7 @@
+use std::cell;
+
 use crate::enums::{cell_physics_type_filters, CellPhysicsType};
+use crate::resources::cell_world::Chunk;
 use crate::resources::CellAssets;
 use crate::utils::ivec2_to_vec3;
 use crate::{
@@ -10,6 +13,8 @@ use crate::{
 use bevy::prelude::*;
 use bevy_enum_filter::Enum;
 
+pub fn swap_cell() {}
+
 pub fn sand_physics(
     mut query: Query<(Entity, &mut Transform), With<Enum!(CellPhysicsType::Sand)>>,
     mut cell_world: ResMut<CellWorld>,
@@ -18,58 +23,34 @@ pub fn sand_physics(
     if !state.is_simulating {
         return;
     }
-    let mut pos: IVec2;
-    let mut pos_below: IVec2;
-    let mut pos_below_right: IVec2;
-    let mut pos_below_left: IVec2;
-    for (entity, mut transform) in query.iter_mut() {
-        pos = position_to_cell_coords(transform.translation);
 
-        pos_below = pos;
-        pos_below.y -= 1;
+    for (mut chunk_pos, mut chunk) in &cell_world.chunks {
+        for cell_option in chunk.cells {
+            if let Some(cell_entity) = cell_option {
+                let cell = query.get(cell_entity);
 
-        pos_below_right = pos_below;
-        pos_below_right.x += 1;
+                if let Ok((entity, mut transform)) = cell {
+                    let chunk_pos = Chunk::global_pos_to_chunk_pos(position_to_cell_coords(
+                        transform.translation,
+                    ));
 
-        pos_below_left = pos_below;
-        pos_below_left.x -= 1;
+                    let mut pos_below = chunk_pos;
+                    pos_below.y -= 1;
 
-        if cell_world.get(pos_below).is_none() {
-            transform.translation.y -= CELL_SIZE.y;
+                    let is_empty_below = chunk.get(pos_below).is_none();
 
-            cell_world.insert(pos, Some(entity));
-            pos.y += 1;
-            cell_world.insert(pos, None);
-        } else if cell_world.get(pos_below_left).is_none()
-            && cell_world.get(pos_below_right).is_none()
-        {
-            let right_or_left = fastrand::bool();
+                    if Chunk::check_bounds(pos_below) {
+                        let cell_below_option = chunk.get_mut(pos_below);
 
-            let pos_to_move = match right_or_left {
-                true => pos_below_right,
-                false => pos_below_left,
-            };
-
-            cell_world.insert(pos, None);
-            cell_world.insert(pos_to_move, Some(entity));
-
-            transform.translation = ivec2_to_vec3(pos_to_move);
-        } else if cell_world.get(pos_below_left).is_none()
-            && !cell_world.get(pos_below_right).is_none()
-        {
-            transform.translation.y -= CELL_SIZE.y;
-            transform.translation.x -= CELL_SIZE.x;
-
-            cell_world.insert(pos, None);
-            cell_world.insert(pos_below_left, Some(entity));
-        } else if !cell_world.get(pos_below_left).is_none()
-            && cell_world.get(pos_below_right).is_none()
-        {
-            transform.translation.y -= CELL_SIZE.y;
-            transform.translation.x += CELL_SIZE.x;
-
-            cell_world.insert(pos, None);
-            cell_world.insert(pos_below_left, Some(entity));
+                        if cell_below_option.is_none() {
+                            transform.translation.y-=CELL_SIZE.y;
+                            continue;
+                        }
+                    } else {
+                        let chunk_below = cell_world.get_chunk(pos_below);
+                    }
+                }
+            }
         }
     }
 }

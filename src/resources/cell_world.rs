@@ -1,6 +1,6 @@
 use bevy::{prelude::*, utils::HashMap};
 
-use crate::enums::{CHUNK_SIZE, CHUNK_SIZE_LEN};
+use crate::{enums::{CHUNK_SIZE, CHUNK_SIZE_LEN}, utils::ivec2_to_vec3};
 pub struct Chunk {
     pub cells: [Option<Entity>; CHUNK_SIZE_LEN],
     pub cell_count: usize,
@@ -47,11 +47,15 @@ impl Chunk {
         }
     }
 
-    fn global_pos_to_chunk_pos(global_pos: IVec2) -> IVec2 {
+    pub fn global_pos_to_chunk_pos(global_pos: IVec2) -> IVec2 {
         // Adjust the global_pos for modulo operation to ensure positive results
         let mod_x = ((global_pos.x % CHUNK_SIZE.x) + CHUNK_SIZE.x) % CHUNK_SIZE.x;
         let mod_y = ((global_pos.y % CHUNK_SIZE.y) + CHUNK_SIZE.y) % CHUNK_SIZE.y;
         IVec2::new(mod_x, mod_y)
+    }
+
+    pub fn check_bounds(pos: IVec2) -> bool {
+        return Chunk::ivec_to_vec_index(pos).is_some();
     }
 }
 
