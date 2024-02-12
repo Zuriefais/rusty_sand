@@ -25,9 +25,9 @@ pub fn sand_physics(
     }
 
     for (mut chunk_pos, mut chunk) in &cell_world.chunks {
-        for cell_option in chunk.cells {
+        for mut cell_option in chunk.cells {
             if let Some(cell_entity) = cell_option {
-                let cell = query.get(cell_entity);
+                let cell = query.get_mut(cell_entity);
 
                 if let Ok((entity, mut transform)) = cell {
                     let chunk_pos = Chunk::global_pos_to_chunk_pos(position_to_cell_coords(
