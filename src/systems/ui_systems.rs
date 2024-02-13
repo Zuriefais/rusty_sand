@@ -1,7 +1,9 @@
 use crate::components::{Cell, MainCamera};
+use crate::enums::{CELL_SIZE, CHUNK_SIZE};
 use crate::resources::cell_world::CellWorld;
 use crate::resources::{CellAssets, CellTypeToSpawn, CursorPosition, EguiHoverState, Selected};
-use crate::utils::{align_to_grid, position_to_cell_coords};
+use crate::utils::{align_to_grid, ivec2_to_vec2, position_to_cell_coords};
+use bevy::ecs::world;
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 
@@ -109,4 +111,29 @@ pub fn cell_list_ui(query: Query<(&Cell, &Transform)>, mut contexts: EguiContext
 
 pub fn check_egui_hover(mut contexts: EguiContexts, mut state: ResMut<EguiHoverState>) {
     state.is_hovered = contexts.ctx_mut().is_pointer_over_area();
+}
+
+pub fn chunk_gizmo(mut gizmos: Gizmos, world: Res<CellWorld>) {
+    for (pos, _) in world.chunks.iter() {
+        let mut global_pos = Vec2 {
+            x: pos.x as f32,
+            y: pos.y as f32,
+        };
+
+        global_pos *= Vec2 {
+            x: CHUNK_SIZE.x as f32,
+            y: CHUNK_SIZE.y as f32,
+        };
+        global_pos *= Vec2 {
+            x: CELL_SIZE.x as f32,
+            y: CELL_SIZE.y as f32,
+        };
+
+        let mut chunk_size = Vec2::ONE;
+
+        chunk_size*=ivec2_to_vec2(CHUNK_SIZE);
+        chunk_size*=CELL_SIZE.xy();
+
+        gizmos.rect_2d(global_pos, 0.0, chunk_size, Color::PURPLE);
+    }
 }

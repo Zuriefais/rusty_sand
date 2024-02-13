@@ -92,6 +92,10 @@ pub fn ivec2_to_vec3(vec: IVec2) -> Vec3 {
     }
 }
 
+pub fn ivec2_to_vec2(ivec: IVec2) -> Vec2 {
+    return Vec2 {x: ivec.x as f32, y: ivec.y as f32};
+}
+
 pub fn position_to_cell_coords<T: XY>(pos: T) -> IVec2 {
     IVec2::new(
         (pos.x() / CELL_SIZE.x).floor() as i32,

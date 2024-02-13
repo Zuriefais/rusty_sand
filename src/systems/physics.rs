@@ -11,6 +11,7 @@ use crate::{
     utils::position_to_cell_coords,
 };
 use bevy::prelude::*;
+use bevy::utils::HashMap;
 use bevy_enum_filter::Enum;
 
 pub fn swap_cell() {}
@@ -24,41 +25,36 @@ pub fn sand_physics(
         return;
     }
 
+    //update_per_chunk: HashMap<IVec2,
+
+    // Step 1: Collect necessary updates
     for (chunk_pos, chunk) in &cell_world.chunks {
-        let mut to_swap = Vec::new();
-
-        for cell_option in chunk.cells {
+        for cell_option in &chunk.cells {
             if let Some(cell_entity) = cell_option {
-                let cell = query.get_mut(cell_entity);
-
-                if let Ok((entity, mut transform)) = cell {
+                if let Ok((entity, mut transform)) = query.get_mut(*cell_entity) {
                     let cell_pos = Chunk::global_pos_to_chunk_pos(position_to_cell_coords(
                         transform.translation,
                     ));
-
                     let mut pos_below = cell_pos;
                     pos_below.y -= 1;
 
-                    if Chunk::check_bounds(pos_below) {
-                        let cell_below_option = chunk.get_mut(pos_below);
-
-                        if cell_below_option.is_none() {
-                            transform.translation.y -= CELL_SIZE.y;
-                            to_swap.push((cell_pos, pos_below, entity));
-                            continue;
-                        }
-                    } else {
-                        let chunk_below = cell_world.get_chunk(pos_below);
+                    if Chunk::check_bounds(pos_below) && chunk.get(pos_below).is_none() {
+                        transform.translation.y -= CELL_SIZE.y;
                     }
                 }
             }
         }
-        for (old_pos, new_pos, entity) in to_swap {
-            chunk.insert(old_pos, None);
-            chunk.insert(new_pos, Some(entity));
-        }
     }
+
+    // Step 2: Apply updates outside of the initial borrow
+    // for (chunk_pos, old_pos, new_pos, entity) in updates {
+    //     if let Some(chunk) = cell_world.get_mut_chunk(*chunk_pos) {
+    //         chunk.insert(old_pos, None);
+    //         chunk.insert(new_pos, Some(entity));
+    //     }
+    // }
 }
+
 // Update the chunk's cells based on movements calculated above
 
 pub fn fluid_physics(

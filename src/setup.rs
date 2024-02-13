@@ -17,8 +17,8 @@ use crate::{
         },
         physics::{fluid_physics, sand_physics, tap_physics},
         ui_systems::{
-            cell_list_ui, check_egui_hover, check_is_empty_on_mouse_pos, my_cursor_system,
-            show_cell_count, spawn_cell_type,
+            cell_list_ui, check_egui_hover, check_is_empty_on_mouse_pos, chunk_gizmo,
+            my_cursor_system, show_cell_count, spawn_cell_type,
         },
         window_management::set_window_icon,
     },
@@ -90,6 +90,10 @@ impl Plugin for SetupPlugin {
                 }
                 "is_empty" => {
                     app.add_systems(Update, check_is_empty_on_mouse_pos);
+                }
+                "chunk_gizmo" => {
+                    app.add_systems(Update, chunk_gizmo);
+                    info!("chunk gizmo enabled");
                 }
                 _ => info!("{}", ("this arg not supported ".to_owned() + arg.as_str())),
             }
