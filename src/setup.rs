@@ -2,15 +2,10 @@ use std::env;
 
 // setup.rs
 use crate::{
-    assets::{CellAsset, CellAssetLoader, ConfigAsset, ConfigAssetLoader},
-    components::{Cell, MainCamera},
-    enums::CellPhysicsType,
-    events::{RemoveCellEvent, SpawnCellEvent},
-    resources::{
+    assets::{CellAsset, CellAssetLoader, ConfigAsset, ConfigAssetLoader}, components::{Cell, MainCamera}, custom_renderer_plugin::{CustomMaterialPlugin, InstanceData, InstanceMaterialData}, enums::CellPhysicsType, events::{RemoveCellEvent, SpawnCellEvent}, resources::{
         cell_world::CellWorld, CellAssets, CellMesh, CellTypeToSpawn, CursorPosition,
         EguiHoverState, Selected, SimulateWorldState,
-    },
-    systems::{
+    }, systems::{
         camera::{move_camera, zoom_camera},
         cell_management::{
             remove_cell, spawn_cell, spawn_cell_on_touch, spawn_or_remove_cell_on_click,
@@ -21,9 +16,9 @@ use crate::{
             my_cursor_system, show_cell_count, spawn_cell_type,
         },
         window_management::set_window_icon,
-    },
+    }
 };
-use bevy::{prelude::*, utils::HashMap, window::PresentMode};
+use bevy::{prelude::*, render::{batching::NoAutomaticBatching, view::NoFrustumCulling}, sprite::{MaterialMesh2dBundle, Mesh2dHandle}, utils::HashMap, window::PresentMode};
 
 use bevy_egui::EguiPlugin;
 use bevy_enum_filter::prelude::AddEnumFilter;
@@ -35,7 +30,7 @@ pub struct SetupPlugin;
 impl Plugin for SetupPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, set_window_icon)
-            .add_systems(Startup, setup)
+            .add_systems(Startup, (setup, init_meshes))
             .insert_resource(ClearColor(Color::rgb(0.0, 0.170, 0.253)))
             .add_plugins(DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
@@ -47,7 +42,7 @@ impl Plugin for SetupPlugin {
                 }),
                 ..default()
             }))
-            .add_plugins(EguiPlugin)
+            .add_plugins((EguiPlugin, CustomMaterialPlugin))
             .add_enum_filter::<CellPhysicsType>()
             .add_systems(Update, spawn_cell_type)
             .add_systems(Update, my_cursor_system)
@@ -101,9 +96,8 @@ impl Plugin for SetupPlugin {
     }
 }
 
-fn setup(mut commands: Commands, meshes: ResMut<Assets<Mesh>>, asset_server: Res<AssetServer>) {
-    commands.spawn((Camera2dBundle::default(), MainCamera));
-    commands.insert_resource(CellMesh::from_world(meshes));
+fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, asset_server: Res<AssetServer>) {
+   
 
     commands.insert_resource(CellAssets {
         handles: HashMap::new(),
@@ -112,6 +106,49 @@ fn setup(mut commands: Commands, meshes: ResMut<Assets<Mesh>>, asset_server: Res
     info!("loading config asset.....");
     let config_handle = asset_server.load::<ConfigAsset>("config.config");
     commands.spawn_empty().insert(config_handle);
+
+    
+    commands.spawn((
+        Mesh2dHandle(meshes
+            .add(shape::Quad::new(Vec2::new(2.0, 2.0)).into())),
+        SpatialBundle::INHERITED_IDENTITY,
+        NoAutomaticBatching,
+        
+        InstanceMaterialData(
+            (1..=10)
+                .flat_map(|x| (1..=10).map(move |y| (x as f32 / 10.0, y as f32 / 10.0)))
+                .map(|(x, y)| InstanceData {
+                    position: Vec3::new(x * 10.0 - 5.0, y * 10.0 - 5.0, 0.0),
+                    scale: 1.0,
+                    color: Color::hsla(x * 360., y, 0.5, 1.0).as_rgba_f32(),
+                })
+                .collect(),
+        ),
+        // NOTE: Frustum culling is done based on the Aabb of the Mesh and the GlobalTransform.
+        // As the cube is at the origin, if its Aabb moves outside the view frustum, all the
+        // instanced cubes will be culled.
+        // The InstanceMaterialData contains the 'GlobalTransform' information for this custom
+        // instancing, and that is not taken into account with the built-in frustum culling.
+        // We must disable the built-in frustum culling by adding the `NoFrustumCulling` marker
+        // component to avoid incorrect culling.
+        NoFrustumCulling,
+    ));
+
+    // camera
+    commands.spawn((Camera2dBundle {
+        transform: Transform::from_xyz(0.0, 0.0, 15.0),
+        projection: OrthographicProjection {
+            far: 1000.,
+            near: -1000.,
+            scale: 0.08,
+            ..Default::default()
+        },
+        ..default()
+    }, MainCamera));
+}
+
+fn init_meshes(mut meshes: ResMut<Assets<Mesh>>, mut commands: Commands,) {
+    commands.insert_resource(CellMesh::from_world(meshes));
 }
 
 fn load_cell_assets(

@@ -7,6 +7,7 @@ mod resources;
 mod setup;
 mod systems;
 mod utils;
+mod custom_renderer_plugin;
 
 extern crate grid;
 
