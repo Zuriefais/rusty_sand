@@ -12,16 +12,12 @@ use crate::{
         EguiHoverState, Selected, SimulateWorldState,
     },
     systems::{
-        camera::{move_camera, zoom_camera},
-        cell_management::{
+        camera::{move_camera, zoom_camera}, cell_management::{
             remove_cell, spawn_cell, spawn_cell_on_touch, spawn_or_remove_cell_on_click,
-        },
-        physics::{fluid_physics, sand_physics, tap_physics},
-        ui_systems::{
+        }, physics::{fluid_physics, sand_physics, tap_physics}, render::render, ui_systems::{
             cell_list_ui, check_egui_hover, check_is_empty_on_mouse_pos, chunk_gizmo,
             my_cursor_system, show_cell_count, spawn_cell_type,
-        },
-        window_management::set_window_icon,
+        }, window_management::set_window_icon
     },
 };
 use bevy::{
@@ -78,7 +74,7 @@ impl Plugin for SetupPlugin {
             .init_asset::<ConfigAsset>()
             .register_asset_loader(CellAssetLoader)
             .register_asset_loader(ConfigAssetLoader)
-            .add_systems(FixedUpdate, (spawn_cell, remove_cell, check_egui_hover))
+            .add_systems(FixedUpdate, (spawn_cell, remove_cell, check_egui_hover, render))
             .add_event::<SpawnCellEvent>()
             .add_event::<RemoveCellEvent>();
 
@@ -121,14 +117,11 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, asset_server:
         Mesh2dHandle(meshes.add(shape::Quad::new(Vec2::new(10.0, 10.0)).into())),
         SpatialBundle::INHERITED_IDENTITY,
         NoAutomaticBatching,
-        InstanceMaterialData(
-            vec![InstanceData {
-                position: Vec3::new(10.0, 10.0, 0.0),
-                scale: 1.0,
-                color: Color::hex("FF00FF").unwrap().into(),
-            }]
-            
-        ),
+        InstanceMaterialData(vec![InstanceData {
+            position: Vec3::new(10.0, 10.0, 0.0),
+            scale: 1.0,
+            color: Color::hex("FF00FF").unwrap().into(),
+        }]),
         // NOTE: Frustum culling is done based on the Aabb of the Mesh and the GlobalTransform.
         // As the cube is at the origin, if its Aabb moves outside the view frustum, all the
         // instanced cubes will be culled.

@@ -1,17 +1,30 @@
 //! A shader that renders a mesh multiple times in one draw call.
 
 use bevy::{
-    core_pipeline::core_2d::Transparent2d, ecs::{
+    core_pipeline::core_2d::Transparent2d,
+    ecs::{
         query::QueryItem,
         system::{lifetimeless::*, SystemParamItem},
-    }, prelude::*, render::{
-        extract_component::{ExtractComponent, ExtractComponentPlugin}, mesh::{GpuBufferInfo, MeshVertexBufferLayout}, render_asset::RenderAssets, render_phase::{
+    },
+    prelude::*,
+    render::{
+        extract_component::{ExtractComponent, ExtractComponentPlugin},
+        mesh::{GpuBufferInfo, MeshVertexBufferLayout},
+        render_asset::RenderAssets,
+        render_phase::{
             AddRenderCommand, DrawFunctions, PhaseItem, RenderCommand, RenderCommandResult,
             RenderPhase, SetItemPipeline, TrackedRenderPass,
-        }, render_resource::*, renderer::RenderDevice, view::ExtractedView, Render, RenderApp, RenderSet
-    }, sprite::{
-        Mesh2dPipeline, Mesh2dPipelineKey, RenderMesh2dInstances, SetMesh2dBindGroup, SetMesh2dViewBindGroup
-    }, utils::FloatOrd
+        },
+        render_resource::*,
+        renderer::RenderDevice,
+        view::ExtractedView,
+        Render, RenderApp, RenderSet,
+    },
+    sprite::{
+        Mesh2dPipeline, Mesh2dPipelineKey, RenderMesh2dInstances, SetMesh2dBindGroup,
+        SetMesh2dViewBindGroup,
+    },
+    utils::FloatOrd,
 };
 use bytemuck::{Pod, Zeroable};
 
@@ -85,9 +98,9 @@ fn queue_custom(
             };
             let key =
                 view_key | Mesh2dPipelineKey::from_primitive_topology(mesh.primitive_topology);
-            
-            let pipeline = pipelines
-                .specialize(&pipeline_cache, &custom_pipeline, key, &mesh.layout);
+
+            let pipeline =
+                pipelines.specialize(&pipeline_cache, &custom_pipeline, key, &mesh.layout);
 
             let pipeline = match pipeline {
                 Ok(id) => id,
@@ -244,4 +257,3 @@ impl<P: PhaseItem> RenderCommand<P> for DrawMeshInstanced {
         RenderCommandResult::Success
     }
 }
-

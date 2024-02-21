@@ -1,13 +1,13 @@
 // main.rs or lib.rs
 mod assets;
 mod components;
+mod custom_renderer_plugin;
 mod enums;
 mod events;
 mod resources;
 mod setup;
 mod systems;
 mod utils;
-mod custom_renderer_plugin;
 
 extern crate grid;
 

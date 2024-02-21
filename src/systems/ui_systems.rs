@@ -131,8 +131,8 @@ pub fn chunk_gizmo(mut gizmos: Gizmos, world: Res<CellWorld>) {
 
         let mut chunk_size = Vec2::ONE;
 
-        chunk_size*=ivec2_to_vec2(CHUNK_SIZE);
-        chunk_size*=CELL_SIZE.xy();
+        chunk_size *= ivec2_to_vec2(CHUNK_SIZE);
+        chunk_size *= CELL_SIZE.xy();
 
         gizmos.rect_2d(global_pos, 0.0, chunk_size, Color::PURPLE);
     }
