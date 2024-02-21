@@ -1,4 +1,3 @@
-
 use crate::assets::CellAsset;
 use crate::components::{Cell, MainCamera};
 use crate::enums::CELL_SIZE;
@@ -86,16 +85,21 @@ pub fn spawn_cell(
                         Some(
                             commands
                                 .spawn((
-                                    MaterialMesh2dBundle {
-                                        mesh: cell_mesh.mesh.clone(),
-                                        transform: Transform {
-                                            translation: ev.pos.extend(0.0),
-                                            scale: CELL_SIZE,
-                                            ..Default::default()
-                                        },
-                                        material: cell_asset.material.clone(),
+                                    Transform {
+                                        translation: ev.pos.extend(0.0),
+                                        scale: CELL_SIZE,
                                         ..Default::default()
                                     },
+                                    // MaterialMesh2dBundle {
+                                    //     mesh: cell_mesh.mesh.clone(),
+                                    //     transform: Transform {
+                                    //         translation: ev.pos.extend(0.0),
+                                    //         scale: CELL_SIZE,
+                                    //         ..Default::default()
+                                    //     },
+                                    //     material: cell_asset.material.clone(),
+                                    //     ..Default::default()
+                                    // },
                                     Cell {
                                         cell_type: cell_asset.cell_type_name.clone(),
                                     },

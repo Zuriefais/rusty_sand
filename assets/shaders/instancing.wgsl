@@ -18,9 +18,22 @@ struct VertexOutput {
 fn vertex(vertex: Vertex) -> VertexOutput {
     let position = vertex.position * vertex.i_pos_scale.w + vertex.i_pos_scale.xyz;
     var out: VertexOutput;
+    /* OLD 3D CODE
 
-    // Assuming mesh_functions::get_model_matrix and mesh_functions::mesh2d_position_local_to_clip
-    // are correctly implemented for 2D
+    // NOTE: Passing 0 as the instance_index to get_model_matrix() is a hack
+    // for this example as the instance_index builtin would map to the wrong
+    // index in the Mesh array. This index could be passed in via another
+    // uniform instead but it's unnecessary for the example.
+    out.clip_position = mesh_position_local_to_clip(
+        get_model_matrix(0u),
+        vec4<f32>(position, 1.0)
+    );
+    out.color = vertex.i_color;
+
+    */
+
+    // mesh_position_local_to_clip
+
     var model = mesh_functions::get_model_matrix(0u);
     out.clip_position = mesh_functions::mesh2d_position_local_to_clip(
         model,

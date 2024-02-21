@@ -12,12 +12,17 @@ use crate::{
         EguiHoverState, Selected, SimulateWorldState,
     },
     systems::{
-        camera::{move_camera, zoom_camera}, cell_management::{
+        camera::{move_camera, zoom_camera},
+        cell_management::{
             remove_cell, spawn_cell, spawn_cell_on_touch, spawn_or_remove_cell_on_click,
-        }, physics::{fluid_physics, sand_physics, tap_physics}, render::render, ui_systems::{
+        },
+        physics::{fluid_physics, sand_physics, tap_physics},
+        render::render,
+        ui_systems::{
             cell_list_ui, check_egui_hover, check_is_empty_on_mouse_pos, chunk_gizmo,
             my_cursor_system, show_cell_count, spawn_cell_type,
-        }, window_management::set_window_icon
+        },
+        window_management::set_window_icon,
     },
 };
 use bevy::{
@@ -74,7 +79,10 @@ impl Plugin for SetupPlugin {
             .init_asset::<ConfigAsset>()
             .register_asset_loader(CellAssetLoader)
             .register_asset_loader(ConfigAssetLoader)
-            .add_systems(FixedUpdate, (spawn_cell, remove_cell, check_egui_hover, render))
+            .add_systems(
+                FixedUpdate,
+                (spawn_cell, remove_cell, check_egui_hover, render),
+            )
             .add_event::<SpawnCellEvent>()
             .add_event::<RemoveCellEvent>();
 
