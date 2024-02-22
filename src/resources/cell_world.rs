@@ -2,7 +2,6 @@ use bevy::{prelude::*, utils::HashMap};
 
 use crate::{
     enums::{CHUNK_SIZE, CHUNK_SIZE_LEN},
-    utils::ivec2_to_vec3,
 };
 pub struct Chunk {
     pub cells: [Option<Entity>; CHUNK_SIZE_LEN],
@@ -58,24 +57,18 @@ impl Chunk {
     }
 
     pub fn check_bounds(pos: IVec2) -> bool {
-        return Chunk::ivec_to_vec_index(pos).is_some();
+        Chunk::ivec_to_vec_index(pos).is_some()
     }
 }
 
 #[derive(Resource)]
+#[derive(Default)]
 pub struct CellWorld {
     pub chunks: HashMap<IVec2, Chunk>,
     pub chunk_count: i32,
 }
 
-impl Default for CellWorld {
-    fn default() -> Self {
-        Self {
-            chunks: Default::default(),
-            chunk_count: 0,
-        }
-    }
-}
+
 
 impl CellWorld {
     pub fn insert(&mut self, pos: IVec2, entity: Option<Entity>) {
@@ -100,10 +93,7 @@ impl CellWorld {
     }
 
     pub fn is_cell_empty(&self, pos: IVec2) -> bool {
-        match self.get(pos) {
-            None => true,
-            Some(_) => false,
-        }
+        self.get(pos).is_none()
     }
 
     pub fn get(&self, pos: IVec2) -> Option<Entity> {
@@ -147,8 +137,8 @@ mod tests {
         cell_world.insert(IVec2::new(10, 10), Some(Entity::from_raw(10)));
         cell_world.insert(IVec2::new(-10, 10), Some(Entity::from_raw(10)));
         println!("Cell at (1, 1): {:?}", cell_world.get(IVec2::new(1, 1)));
-        assert_eq!(true, cell_world.is_cell_empty(IVec2::new(1, 1)));
-        assert_eq!(false, cell_world.is_cell_empty(IVec2::new(10, 10)));
-        assert_eq!(false, cell_world.is_cell_empty(IVec2::new(-10, 10)));
+        assert!(cell_world.is_cell_empty(IVec2::new(1, 1)));
+        assert!(!cell_world.is_cell_empty(IVec2::new(10, 10)));
+        assert!(!cell_world.is_cell_empty(IVec2::new(-10, 10)));
     }
 }

@@ -3,7 +3,7 @@ use crate::enums::{CELL_SIZE, CHUNK_SIZE};
 use crate::resources::cell_world::CellWorld;
 use crate::resources::{CellAssets, CellTypeToSpawn, CursorPosition, EguiHoverState, Selected};
 use crate::utils::{align_to_grid, ivec2_to_vec2, position_to_cell_coords};
-use bevy::ecs::world;
+
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 
@@ -61,7 +61,7 @@ pub fn my_cursor_system(
                 ui.label(cursor_position.pos.to_string());
             });
         }
-        Err(_) => return,
+        Err(_) => (),
     }
 }
 
@@ -125,8 +125,8 @@ pub fn chunk_gizmo(mut gizmos: Gizmos, world: Res<CellWorld>) {
             y: CHUNK_SIZE.y as f32,
         };
         global_pos *= Vec2 {
-            x: CELL_SIZE.x as f32,
-            y: CELL_SIZE.y as f32,
+            x: CELL_SIZE.x,
+            y: CELL_SIZE.y,
         };
 
         let mut chunk_size = Vec2::ONE;

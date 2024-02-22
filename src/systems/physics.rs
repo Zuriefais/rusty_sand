@@ -1,4 +1,4 @@
-use std::cell;
+
 
 use crate::enums::{cell_physics_type_filters, CellPhysicsType};
 use crate::resources::cell_world::Chunk;
@@ -11,14 +11,14 @@ use crate::{
     utils::position_to_cell_coords,
 };
 use bevy::prelude::*;
-use bevy::utils::HashMap;
+
 use bevy_enum_filter::Enum;
 
 pub fn swap_cell() {}
 
 pub fn sand_physics(
     mut query: Query<(Entity, &mut Transform), With<Enum!(CellPhysicsType::Sand)>>,
-    mut cell_world: ResMut<CellWorld>,
+    cell_world: ResMut<CellWorld>,
     state: Res<SimulateWorldState>,
 ) {
     if !state.is_simulating {
@@ -28,10 +28,10 @@ pub fn sand_physics(
     //update_per_chunk: HashMap<IVec2,
 
     // Step 1: Collect necessary updates
-    for (chunk_pos, chunk) in &cell_world.chunks {
+    for (_chunk_pos, chunk) in &cell_world.chunks {
         for cell_option in &chunk.cells {
             if let Some(cell_entity) = cell_option {
-                if let Ok((entity, mut transform)) = query.get_mut(*cell_entity) {
+                if let Ok((_entity, mut transform)) = query.get_mut(*cell_entity) {
                     let cell_pos = Chunk::global_pos_to_chunk_pos(position_to_cell_coords(
                         transform.translation,
                     ));
@@ -122,14 +122,14 @@ pub fn fluid_physics(
 
             transform.translation = ivec2_to_vec3(pos_to_move);
         } else if cell_world.get(pos_below_left).is_none()
-            && !cell_world.get(pos_below_right).is_none()
+            && cell_world.get(pos_below_right).is_some()
         {
             transform.translation.y -= CELL_SIZE.y;
             transform.translation.x -= CELL_SIZE.x;
 
             cell_world.insert(pos, None);
             cell_world.insert(pos_below_left, Some(entity));
-        } else if !cell_world.get(pos_below_left).is_none()
+        } else if cell_world.get(pos_below_left).is_some()
             && cell_world.get(pos_below_right).is_none()
         {
             transform.translation.y -= CELL_SIZE.y;
@@ -137,12 +137,12 @@ pub fn fluid_physics(
 
             cell_world.insert(pos, None);
             cell_world.insert(pos_below_left, Some(entity));
-        } else if cell_world.get(pos_left).is_none() && !cell_world.get(pos_right).is_none() {
+        } else if cell_world.get(pos_left).is_none() && cell_world.get(pos_right).is_some() {
             transform.translation.x -= CELL_SIZE.x;
 
             cell_world.insert(pos, None);
             cell_world.insert(pos_below_left, Some(entity));
-        } else if !cell_world.get(pos_left).is_none() && cell_world.get(pos_right).is_none() {
+        } else if cell_world.get(pos_left).is_some() && cell_world.get(pos_right).is_none() {
             transform.translation.x += CELL_SIZE.x;
 
             cell_world.insert(pos, None);

@@ -28,7 +28,7 @@ use crate::{
 use bevy::{
     prelude::*,
     render::{batching::NoAutomaticBatching, view::NoFrustumCulling},
-    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
+    sprite::{Mesh2dHandle},
     utils::HashMap,
     window::PresentMode,
 };
@@ -156,7 +156,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, asset_server:
     ));
 }
 
-fn init_meshes(mut meshes: ResMut<Assets<Mesh>>, mut commands: Commands) {
+fn init_meshes(meshes: ResMut<Assets<Mesh>>, mut commands: Commands) {
     commands.insert_resource(CellMesh::from_world(meshes));
 }
 

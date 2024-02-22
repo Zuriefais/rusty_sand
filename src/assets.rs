@@ -35,7 +35,7 @@ where
     D: Deserializer<'de>,
 {
     let s = String::deserialize(deserializer)?;
-    Color::hex(&s).map_err(serde::de::Error::custom)
+    Color::hex(s).map_err(serde::de::Error::custom)
 }
 
 #[derive(Default)]

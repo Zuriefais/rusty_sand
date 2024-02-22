@@ -6,7 +6,7 @@ use crate::resources::cell_world::CellWorld;
 use crate::resources::{CellMesh, CellTypeToSpawn, CursorPosition, EguiHoverState};
 use crate::utils::{align_to_grid, position_to_cell_coords};
 use bevy::prelude::*;
-use bevy::sprite::MaterialMesh2dBundle;
+
 
 pub fn spawn_or_remove_cell_on_click(
     buttons: Res<Input<MouseButton>>,
@@ -25,7 +25,6 @@ pub fn spawn_or_remove_cell_on_click(
                 });
             }
             None => {
-                return;
             }
         }
     } else if buttons.pressed(MouseButton::Right) && !state.is_hovered {
@@ -69,7 +68,7 @@ pub fn spawn_cell_on_touch(
 
 pub fn spawn_cell(
     mut commands: Commands,
-    cell_mesh: Res<CellMesh>,
+    _cell_mesh: Res<CellMesh>,
     mut cell_world: ResMut<CellWorld>,
     mut ev_spawn_cell: EventReader<SpawnCellEvent>,
     cell_assets: Res<Assets<CellAsset>>,

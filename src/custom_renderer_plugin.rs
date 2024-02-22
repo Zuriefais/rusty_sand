@@ -114,7 +114,7 @@ fn queue_custom(
 
             transparent_phase.add(Transparent2d {
                 sort_key: FloatOrd(mesh_z),
-                entity: entity,
+                entity,
                 pipeline,
                 draw_function: draw_custom,
                 batch_range: 0..1,

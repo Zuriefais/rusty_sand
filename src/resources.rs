@@ -42,7 +42,7 @@ pub struct CursorPosition {
 
 impl CursorPosition {
     pub fn default() -> Self {
-        return Self { pos: Vec2::ZERO };
+        Self { pos: Vec2::ZERO }
     }
 }
 

@@ -3,7 +3,7 @@ use crate::{
     components::Cell,
     custom_renderer_plugin::{InstanceData, InstanceMaterialData},
     resources::{
-        cell_world::{self, CellWorld},
+        cell_world::{CellWorld},
         CellAssets,
     },
 };

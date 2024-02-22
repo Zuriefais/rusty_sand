@@ -60,11 +60,11 @@ pub trait XYI {
 
 impl XYI for IVec2 {
     fn x(&self) -> i32 {
-        return self.x;
+        self.x
     }
 
     fn y(&self) -> i32 {
-        return self.y;
+        self.y
     }
 }
 
@@ -80,7 +80,7 @@ impl XYI for (i32, i32) {
 
 impl dyn XYI {
     pub fn to_ivec2(&self) -> IVec2 {
-        return IVec2::new(self.x(), self.y());
+        IVec2::new(self.x(), self.y())
     }
 }
 
@@ -93,10 +93,10 @@ pub fn ivec2_to_vec3(vec: IVec2) -> Vec3 {
 }
 
 pub fn ivec2_to_vec2(ivec: IVec2) -> Vec2 {
-    return Vec2 {
+    Vec2 {
         x: ivec.x as f32,
         y: ivec.y as f32,
-    };
+    }
 }
 
 pub fn position_to_cell_coords<T: XY>(pos: T) -> IVec2 {
