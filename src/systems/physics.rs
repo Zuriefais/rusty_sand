@@ -1,5 +1,3 @@
-
-
 use crate::enums::{cell_physics_type_filters, CellPhysicsType};
 use crate::resources::cell_world::Chunk;
 use crate::resources::CellAssets;
@@ -174,7 +172,7 @@ pub fn tap_physics(
                 }
                 ev_spawn_cell.send(SpawnCellEvent {
                     pos: Vec2::new(pos.x, pos.y),
-                    cell_type: cell_assets.handles[spawn_type].clone(),
+                    cell_type: cell_assets.clone().get_index_by_name(spawn_type.clone()).unwrap(),
                 });
             }
             _ => return,

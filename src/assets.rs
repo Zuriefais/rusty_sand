@@ -1,7 +1,6 @@
 use crate::enums::CellPhysicsType;
 use bevy::asset::io::Reader;
-use bevy::asset::{AsyncReadExt, LoadedAsset};
-use bevy::reflect::TypeUuid;
+use bevy::asset::AsyncReadExt;
 use bevy::utils::thiserror;
 use bevy::{
     asset::{AssetLoader, LoadContext},
@@ -10,20 +9,32 @@ use bevy::{
 };
 use bevy_inspector_egui::InspectorOptions;
 use serde::{Deserialize, Deserializer};
+use strum_macros::Display;
 use std::str;
 use thiserror::Error;
 
-#[uuid = "5b68f25a-835d-45f2-855d-94613a2da2fd"]
-#[derive(Asset, TypePath, Debug, Deserialize, InspectorOptions, TypeUuid)]
-pub struct CellAsset {
-    pub cell_physics_behavior: CellPhysicsType,
+#[derive(Asset, TypePath, Debug, Deserialize, InspectorOptions, Clone)]
+pub struct CellAssetToLoad {
+    pub physics_behavior: CellPhysicsType,
     #[serde(deserialize_with = "hex_to_color")]
     pub color: Color,
-    pub cell_type_name: String,
+    pub name: String,
     #[serde(default = "default_i32")]
     pub density: i32,
-    #[serde(skip)]
-    pub material: Handle<ColorMaterial>,
+}
+
+impl CellAssetToLoad {
+    pub fn to_cell_asset(self) -> CellAsset {
+        CellAsset { physics_behavior: self.physics_behavior, color: self.color, name: self.name, density: self.density  }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct CellAsset {
+    pub physics_behavior: CellPhysicsType,
+    pub color: Color,
+    pub name: String,
+    pub density: i32,
 }
 
 fn default_i32() -> i32 {
@@ -51,7 +62,7 @@ pub enum CellAssetLoaderError {
 }
 
 impl AssetLoader for CellAssetLoader {
-    type Asset = CellAsset;
+    type Asset = CellAssetToLoad;
     type Settings = ();
     type Error = CellAssetLoaderError;
     fn load<'a>(
@@ -63,10 +74,7 @@ impl AssetLoader for CellAssetLoader {
         Box::pin(async move {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;
-            let mut custom_asset = ron::de::from_bytes::<CellAsset>(&bytes)?;
-            let color_material = LoadedAsset::from(ColorMaterial::from(custom_asset.color));
-            custom_asset.material =
-                load_context.add_loaded_labeled_asset("Color material", color_material);
+            let custom_asset = ron::de::from_bytes::<CellAssetToLoad>(&bytes)?;
             Ok(custom_asset)
         })
     }

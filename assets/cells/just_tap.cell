@@ -1,5 +1,5 @@
-CellAsset(
-    cell_physics_behavior: Tap("Water"),
+CellAssetToLoad(
+    physics_behavior: Tap("Water"),
     color: "ffffff",
-    cell_type_name: "Just tap",
+    name: "Just tap",
 )

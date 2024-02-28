@@ -1,8 +1,6 @@
 use bevy::{prelude::*, utils::HashMap};
 
-use crate::{
-    enums::{CHUNK_SIZE, CHUNK_SIZE_LEN},
-};
+use crate::enums::{CHUNK_SIZE, CHUNK_SIZE_LEN};
 pub struct Chunk {
     pub cells: [Option<Entity>; CHUNK_SIZE_LEN],
     pub cell_count: usize,
@@ -61,14 +59,11 @@ impl Chunk {
     }
 }
 
-#[derive(Resource)]
-#[derive(Default)]
+#[derive(Resource, Default)]
 pub struct CellWorld {
     pub chunks: HashMap<IVec2, Chunk>,
     pub chunk_count: i32,
 }
-
-
 
 impl CellWorld {
     pub fn insert(&mut self, pos: IVec2, entity: Option<Entity>) {

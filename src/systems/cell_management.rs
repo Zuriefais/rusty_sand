@@ -1,12 +1,10 @@
-use crate::assets::CellAsset;
 use crate::components::{Cell, MainCamera};
 use crate::enums::CELL_SIZE;
 use crate::events::{RemoveCellEvent, SpawnCellEvent};
 use crate::resources::cell_world::CellWorld;
-use crate::resources::{CellMesh, CellTypeToSpawn, CursorPosition, EguiHoverState};
+use crate::resources::{CellAssets, CellMesh, CellTypeToSpawn, CursorPosition, EguiHoverState};
 use crate::utils::{align_to_grid, position_to_cell_coords};
 use bevy::prelude::*;
-
 
 pub fn spawn_or_remove_cell_on_click(
     buttons: Res<Input<MouseButton>>,
@@ -24,8 +22,7 @@ pub fn spawn_or_remove_cell_on_click(
                     cell_type: selected.handle.clone(),
                 });
             }
-            None => {
-            }
+            None => {}
         }
     } else if buttons.pressed(MouseButton::Right) && !state.is_hovered {
         ev_remove_cell.send(RemoveCellEvent {
@@ -71,11 +68,11 @@ pub fn spawn_cell(
     _cell_mesh: Res<CellMesh>,
     mut cell_world: ResMut<CellWorld>,
     mut ev_spawn_cell: EventReader<SpawnCellEvent>,
-    cell_assets: Res<Assets<CellAsset>>,
+    cell_assets: Res<CellAssets>
 ) {
     for ev in ev_spawn_cell.read() {
         let grid_pos = position_to_cell_coords(ev.pos);
-        let cell_asset = cell_assets.get(ev.cell_type.clone());
+        let cell_asset = cell_assets.clone().get(ev.cell_type.clone());
         match cell_asset {
             Some(cell_asset) => {
                 if cell_world.is_cell_empty(grid_pos) {
@@ -100,9 +97,9 @@ pub fn spawn_cell(
                                     //     ..Default::default()
                                     // },
                                     Cell {
-                                        cell_type: cell_asset.cell_type_name.clone(),
+                                        cell_type: cell_asset.name.clone(),
                                     },
-                                    cell_asset.cell_physics_behavior.clone(),
+                                    cell_asset.physics_behavior.clone(),
                                 ))
                                 .id(),
                         ),

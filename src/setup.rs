@@ -2,7 +2,7 @@ use std::env;
 
 // setup.rs
 use crate::{
-    assets::{CellAsset, CellAssetLoader, ConfigAsset, ConfigAssetLoader},
+    assets::{CellAssetLoader, CellAssetToLoad, ConfigAsset, ConfigAssetLoader},
     components::{Cell, MainCamera},
     custom_renderer_plugin::{CustomMaterialPlugin, InstanceData, InstanceMaterialData},
     enums::CellPhysicsType,
@@ -28,8 +28,7 @@ use crate::{
 use bevy::{
     prelude::*,
     render::{batching::NoAutomaticBatching, view::NoFrustumCulling},
-    sprite::{Mesh2dHandle},
-    utils::HashMap,
+    sprite::Mesh2dHandle,
     window::PresentMode,
 };
 
@@ -69,13 +68,12 @@ impl Plugin for SetupPlugin {
             .insert_resource(SimulateWorldState::default())
             .register_type::<SimulateWorldState>()
             .register_type::<Cell>()
-            .register_type::<CellAssets>()
             .add_plugins(FpsCounterPlugin)
             .add_systems(Update, spawn_cell_on_touch)
             .add_systems(Update, zoom_camera)
             .add_systems(Update, process_loaded_assets)
             .add_systems(Update, load_cell_assets)
-            .init_asset::<CellAsset>()
+            .init_asset::<CellAssetToLoad>()
             .init_asset::<ConfigAsset>()
             .register_asset_loader(CellAssetLoader)
             .register_asset_loader(ConfigAssetLoader)
@@ -113,9 +111,7 @@ impl Plugin for SetupPlugin {
 }
 
 fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, asset_server: Res<AssetServer>) {
-    commands.insert_resource(CellAssets {
-        handles: HashMap::new(),
-    });
+    commands.insert_resource(CellAssets::default());
 
     info!("loading config asset.....");
     let config_handle = asset_server.load::<ConfigAsset>("config.config");
@@ -170,7 +166,7 @@ fn load_cell_assets(
         if let Some(config) = config_assets.get(entity.1) {
             for path in &config.cell_paths {
                 info!("loading cell at path: {}", path);
-                let asset_handle = asset_server.load::<CellAsset>(path);
+                let asset_handle = asset_server.load::<CellAssetToLoad>(path);
                 commands.spawn_empty().insert(asset_handle);
             }
         }
@@ -180,22 +176,19 @@ fn load_cell_assets(
 
 fn process_loaded_assets(
     mut commands: Commands,
-    query: Query<(Entity, &Handle<CellAsset>)>,
+    query: Query<(Entity, &Handle<CellAssetToLoad>)>,
     mut cell_assets: ResMut<CellAssets>,
-    cell_assets_storage: Res<Assets<CellAsset>>,
+    cell_assets_storage: Res<Assets<CellAssetToLoad>>,
     mut cell_type: ResMut<CellTypeToSpawn>,
 ) {
     for (entity, handle) in query.iter() {
         if let Some(cell_asset) = cell_assets_storage.get(handle) {
-            // Now you have access to cell_asset data like cell_type_name
-            cell_assets
-                .handles
-                .insert(cell_asset.cell_type_name.clone(), handle.clone());
+            cell_assets.add(<CellAssetToLoad as Clone>::clone(&cell_asset).to_cell_asset());
             info!("{:?}", cell_asset);
             // Remove the entity to avoid reprocessing
             cell_type.selected = Some(Selected {
-                name: cell_asset.cell_type_name.clone(),
-                handle: handle.clone(),
+                name: cell_asset.name.clone(),
+                handle: <CellAssets as Clone>::clone(&cell_assets).get_last_index(),
             });
             commands.entity(entity).despawn();
         }

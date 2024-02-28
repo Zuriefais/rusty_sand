@@ -1,11 +1,7 @@
 use crate::{
-    assets::CellAsset,
     components::Cell,
     custom_renderer_plugin::{InstanceData, InstanceMaterialData},
-    resources::{
-        cell_world::{CellWorld},
-        CellAssets,
-    },
+    resources::{cell_world::CellWorld, CellAssets},
 };
 use bevy::prelude::*;
 
@@ -14,7 +10,6 @@ pub fn render(
     mut instance_material_data_entity: Query<&mut InstanceMaterialData>,
     query: Query<((&Transform, &Cell), With<Cell>)>,
     cell_assets_handles: Res<CellAssets>,
-    cell_assets: Res<Assets<CellAsset>>,
 ) {
     let mut cells_material_data = instance_material_data_entity.single_mut();
     cells_material_data.0.clear();
@@ -28,16 +23,16 @@ pub fn render(
         for cell_option in &chunk.1.cells {
             if let Some(cell_entity) = cell_option {
                 if let Ok(((transform, cell), _)) = query.get(*cell_entity) {
-                    if let Some(cell_asset_handle) =
-                        cell_assets_handles.handles.get(&cell.cell_type)
-                    {
-                        if let Some(cell_asset) = cell_assets.get(cell_asset_handle) {
+                    match cell_assets_handles.get_color_by_name(cell.cell_type.clone()).clone() {
+                        Some(color) => {
                             cells_material_data.0.push(InstanceData {
                                 position: transform.translation,
                                 scale: 1.0,
-                                color: cell_asset.color.into(),
+                                color: color.into(),
                             });
-                        }
+                        
+                        },
+                        None => todo!(),
                     }
                 }
             }

@@ -18,20 +18,20 @@ pub fn spawn_cell_type(
             egui::ComboBox::from_label("Select one!")
                 .selected_text(format!("{}", selected.name))
                 .show_ui(ui, |ui| {
-                    for cell_asset in cell_assets.handles.iter() {
+                    for (i, cell_asset) in cell_assets.assets.iter().enumerate() {
                         if ui
                             .selectable_value(
                                 &mut selected, // Mutable reference
                                 Selected {
-                                    name: cell_asset.0.to_string(),
-                                    handle: cell_asset.1.clone(),
+                                    name: cell_asset.name.to_string(),
+                                    handle: i,
                                 },
-                                format!("{:?}", cell_asset.0),
+                                format!("{:?}", cell_asset),
                             )
                             .clicked()
                         {
                             cell_type_to_spawn.selected = Some(selected.clone()); // Update the state
-                            info!("Selected: {}", cell_asset.0);
+                            info!("Selected: {:?}", cell_asset);
                         }
                     }
                 });
