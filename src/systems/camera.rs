@@ -1,10 +1,11 @@
 use crate::{
-    components::MainCamera,
+    components::{MainCamera, Player, SlowdownCoefficient, Velocity},
     resources::{CursorPosition, EguiHoverState},
 };
 use bevy::{
     input::mouse::{MouseScrollUnit, MouseWheel},
     prelude::*,
+    transform,
 };
 
 pub fn move_camera(
@@ -29,7 +30,24 @@ pub fn move_camera(
     }
 
     camera_transform.translation += (move_dir * speed as f32 * time.delta_seconds()).extend(0f32);
+
+    info!("{:?}", camera_transform.translation);
 }
+
+// pub fn follow_player(
+//     mut camera_q: Query<(&mut Transform, &mut Velocity, &mut SlowdownCoefficient)>,
+//     player_q: Query<&Transform, With<Player>>,
+// ) {
+//     let (mut cam_transform, mut velocity, coefficient) = camera_q.single_mut();
+//     let player_transform = player_q.single();
+
+//     // let direction = (player_transform.translation - cam_transform.translation).xy();
+
+//     // velocity.0 += direction * 0.1;
+//     // velocity.0 *= coefficient.0;
+
+//     // cam_transform.translation += direction.extend(0f32);
+// }
 
 pub fn zoom_camera(
     mut mouse_wheel_events: EventReader<MouseWheel>,

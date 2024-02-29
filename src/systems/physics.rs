@@ -172,7 +172,10 @@ pub fn tap_physics(
                 }
                 ev_spawn_cell.send(SpawnCellEvent {
                     pos: Vec2::new(pos.x, pos.y),
-                    cell_type: cell_assets.clone().get_index_by_name(spawn_type.clone()).unwrap(),
+                    cell_type: cell_assets
+                        .clone()
+                        .get_index_by_name(spawn_type.clone())
+                        .unwrap(),
                 });
             }
             _ => return,

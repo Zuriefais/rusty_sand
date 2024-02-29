@@ -9,8 +9,8 @@ use bevy::{
 };
 use bevy_inspector_egui::InspectorOptions;
 use serde::{Deserialize, Deserializer};
-use strum_macros::Display;
 use std::str;
+use strum_macros::Display;
 use thiserror::Error;
 
 #[derive(Asset, TypePath, Debug, Deserialize, InspectorOptions, Clone)]
@@ -25,7 +25,12 @@ pub struct CellAssetToLoad {
 
 impl CellAssetToLoad {
     pub fn to_cell_asset(self) -> CellAsset {
-        CellAsset { physics_behavior: self.physics_behavior, color: self.color, name: self.name, density: self.density  }
+        CellAsset {
+            physics_behavior: self.physics_behavior,
+            color: self.color,
+            name: self.name,
+            density: self.density,
+        }
     }
 }
 

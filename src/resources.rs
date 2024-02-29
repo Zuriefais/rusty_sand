@@ -33,13 +33,13 @@ impl EguiHoverState {
 pub struct CellAssets {
     pub assets: Vec<CellAsset>,
     pub assets_ids_map: HashMap<String, usize>,
-    pub assets_color_vec: Vec<Color>
+    pub assets_color_vec: Vec<Color>,
 }
 
 impl CellAssets {
     pub fn get_by_name(&self, name: String) -> Option<CellAsset> {
         if let Some(handle_index) = self.assets_ids_map.get(&name) {
-            return self.assets.get(handle_index.clone()).cloned()
+            return self.assets.get(handle_index.clone()).cloned();
         }
 
         None
@@ -59,7 +59,7 @@ impl CellAssets {
 
     pub fn get_color_by_name(&self, name: String) -> Option<Color> {
         if let Some(handle_index) = self.assets_ids_map.get(&name) {
-            return Some(self.assets_color_vec[*handle_index])
+            return Some(self.assets_color_vec[*handle_index]);
         }
         None
     }
@@ -67,16 +67,14 @@ impl CellAssets {
     pub fn add(&mut self, asset: CellAsset) {
         self.assets.push(asset.clone());
         self.assets_color_vec.push(asset.color);
-        self.assets_ids_map.insert(asset.name, self.assets.len()-1);             
+        self.assets_ids_map
+            .insert(asset.name, self.assets.len() - 1);
     }
-    
 
-    pub fn remove() {
-
-    }
+    pub fn remove() {}
 
     pub fn get_last_index(self) -> usize {
-        self.assets.len()-1
+        self.assets.len() - 1
     }
 }
 
@@ -112,7 +110,7 @@ pub struct CellTypeToSpawn {
 #[derive(PartialEq, Eq, Clone)]
 pub struct Selected {
     pub name: String,
-    pub handle: usize ,
+    pub handle: usize,
 }
 
 impl CellTypeToSpawn {

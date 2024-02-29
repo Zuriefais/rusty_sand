@@ -3,7 +3,7 @@ use std::env;
 // setup.rs
 use crate::{
     assets::{CellAssetLoader, CellAssetToLoad, ConfigAsset, ConfigAssetLoader},
-    components::{Cell, MainCamera},
+    components::{Cell, MainCamera, Player, SlowdownCoefficient, Velocity},
     custom_renderer_plugin::{CustomMaterialPlugin, InstanceData, InstanceMaterialData},
     enums::CellPhysicsType,
     events::{RemoveCellEvent, SpawnCellEvent},
@@ -17,6 +17,7 @@ use crate::{
             remove_cell, spawn_cell, spawn_cell_on_touch, spawn_or_remove_cell_on_click,
         },
         physics::{fluid_physics, sand_physics, tap_physics},
+        player::move_player,
         render::render,
         ui_systems::{
             cell_list_ui, check_egui_hover, check_is_empty_on_mouse_pos, chunk_gizmo,
@@ -70,7 +71,7 @@ impl Plugin for SetupPlugin {
             .register_type::<Cell>()
             .add_plugins(FpsCounterPlugin)
             .add_systems(Update, spawn_cell_on_touch)
-            .add_systems(Update, zoom_camera)
+            .add_systems(Update, (zoom_camera, move_player))
             .add_systems(Update, process_loaded_assets)
             .add_systems(Update, load_cell_assets)
             .init_asset::<CellAssetToLoad>()
@@ -149,7 +150,11 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, asset_server:
             ..default()
         },
         MainCamera,
+        Velocity { 0: Vec2::ZERO },
+        SlowdownCoefficient { 0: 0.9 },
     ));
+
+    commands.spawn((Player, Transform::from_xyz(0.0, 0.0, 0.0)));
 }
 
 fn init_meshes(meshes: ResMut<Assets<Mesh>>, mut commands: Commands) {

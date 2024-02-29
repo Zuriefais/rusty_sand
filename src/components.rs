@@ -9,3 +9,12 @@ pub struct Cell {
 
 #[derive(Component)]
 pub struct MainCamera;
+
+#[derive(Component, Default)]
+pub struct Velocity(pub Vec2);
+
+#[derive(Component, Default)]
+pub struct SlowdownCoefficient(pub f32);
+
+#[derive(Component)]
+pub struct Player;
