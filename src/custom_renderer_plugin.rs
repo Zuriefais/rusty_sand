@@ -28,7 +28,7 @@ use bevy::{
 };
 use bytemuck::{Pod, Zeroable};
 
-#[derive(Component, Deref)]
+#[derive(Component, Deref, DerefMut)]
 pub struct InstanceMaterialData(pub Vec<InstanceData>);
 
 impl ExtractComponent for InstanceMaterialData {

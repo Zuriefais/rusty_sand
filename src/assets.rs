@@ -10,7 +10,6 @@ use bevy::{
 use bevy_inspector_egui::InspectorOptions;
 use serde::{Deserialize, Deserializer};
 use std::str;
-use strum_macros::Display;
 use thiserror::Error;
 
 #[derive(Asset, TypePath, Debug, Deserialize, InspectorOptions, Clone)]

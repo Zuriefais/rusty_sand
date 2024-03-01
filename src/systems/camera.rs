@@ -30,8 +30,6 @@ pub fn move_camera(
     }
 
     camera_transform.translation += (move_dir * speed as f32 * time.delta_seconds()).extend(0f32);
-
-    info!("{:?}", camera_transform.translation);
 }
 
 // pub fn follow_player(

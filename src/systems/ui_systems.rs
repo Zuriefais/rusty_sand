@@ -76,28 +76,28 @@ pub fn show_cell_count(mut contexts: EguiContexts, world: ResMut<CellWorld>) {
     });
 }
 
-pub fn check_is_empty_on_mouse_pos(
-    cursor_positions: Res<CursorPosition>,
-    world: Res<CellWorld>,
-    mut contexts: EguiContexts,
-    cells_query: Query<&Cell>,
-) {
-    let grid_pos = position_to_cell_coords(cursor_positions.pos);
-    let value = world.get(grid_pos);
-    let is_empty_text: String = match value {
-        Some(e) => {
-            if let Ok(cell) = cells_query.get(e) {
-                cell.cell_type.clone()
-            } else {
-                "empty".to_string()
-            }
-        }
-        None => "empty".to_string(),
-    };
-    egui::Window::new("Is empty on mouse position:").show(contexts.ctx_mut(), |ui| {
-        ui.label(is_empty_text);
-    });
-}
+// pub fn check_is_empty_on_mouse_pos(
+//     cursor_positions: Res<CursorPosition>,
+//     world: Res<CellWorld>,
+//     mut contexts: EguiContexts,
+//     cells_query: Query<&Cell>,
+// ) {
+//     let grid_pos = position_to_cell_coords(cursor_positions.pos);
+//     let value = world.get(grid_pos);
+//     let is_empty_text: String = match value {
+//         Some(e) => {
+//             if let Ok(cell) = cells_query.get(e) {
+//                 cell.cell_type.clone()
+//             } else {
+//                 "empty".to_string()
+//             }
+//         }
+//         None => "empty".to_string(),
+//     };
+//     egui::Window::new("Is empty on mouse position:").show(contexts.ctx_mut(), |ui| {
+//         ui.label(is_empty_text);
+//     });
+// }
 
 pub fn cell_list_ui(query: Query<(&Cell, &Transform)>, mut contexts: EguiContexts) {
     egui::Window::new("Cells list:").show(contexts.ctx_mut(), |ui| {
