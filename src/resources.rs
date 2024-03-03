@@ -1,6 +1,6 @@
 pub mod cell_world;
 
-use crate::assets::CellAsset;
+use crate::{assets::CellAsset, enums::CellPhysicsType};
 use bevy::{prelude::*, sprite::Mesh2dHandle, utils::hashbrown::HashMap};
 use bevy_inspector_egui::{inspector_options::ReflectInspectorOptions, InspectorOptions};
 
@@ -34,6 +34,7 @@ pub struct CellAssets {
     pub assets: Vec<CellAsset>,
     pub assets_ids_map: HashMap<String, usize>,
     pub assets_color_vec: Vec<Color>,
+    pub assets_physics_behavior_vec: Vec<CellPhysicsType>,
 }
 
 impl CellAssets {
@@ -57,6 +58,10 @@ impl CellAssets {
         Some(self.assets_color_vec[i])
     }
 
+    pub fn get_physics_behavior(&self, i: usize) -> Option<CellPhysicsType> {
+        Some(self.assets_physics_behavior_vec[i].clone())
+    }
+
     pub fn get_color_by_name(&self, name: String) -> Option<Color> {
         if let Some(handle_index) = self.assets_ids_map.get(&name) {
             return Some(self.assets_color_vec[*handle_index]);
@@ -67,6 +72,8 @@ impl CellAssets {
     pub fn add(&mut self, asset: CellAsset) {
         self.assets.push(asset.clone());
         self.assets_color_vec.push(asset.color);
+        self.assets_physics_behavior_vec
+            .push(asset.physics_behavior);
         self.assets_ids_map
             .insert(asset.name, self.assets.len() - 1);
     }

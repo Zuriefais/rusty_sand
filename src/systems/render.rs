@@ -2,12 +2,10 @@ use crate::{
     components::Player,
     custom_renderer_plugin::{InstanceData, InstanceMaterialData},
     enums::{CELL_SIZE, CHUNK_SIZE},
-    resources::{
-        cell_world::CellWorld,
-        CellAssets,
-    },
+    resources::{cell_world::CellWorld, CellAssets},
 };
 use bevy::prelude::*;
+use rayon::prelude::*;
 
 pub fn render(
     world: Res<CellWorld>,
@@ -26,10 +24,12 @@ pub fn render(
     let player_pos = player_query.single().translation;
 
     for (pos, _) in world.chunks.iter() {
-        cells_material_data.append(&mut render_chunk(&world, pos.clone()*CHUNK_SIZE, &cell_assets_handles));
+        cells_material_data.append(&mut render_chunk(
+            &world,
+            pos.clone() * CHUNK_SIZE,
+            &cell_assets_handles,
+        ));
     }
-
-    
 
     cells_material_data.0.push(InstanceData {
         position: player_pos,
@@ -46,8 +46,9 @@ fn render_chunk(
     cell_assets_handles: &Res<CellAssets>,
 ) -> Vec<InstanceData> {
     let mut material_data = vec![];
-    let chunk_pos_local = (CellWorld::calculate_chunk_pos(chunk_pos)*CHUNK_SIZE*CELL_SIZE.xy().as_ivec2()).as_vec2();
-    info!("{:?}", chunk_pos_local);
+    let chunk_pos_local =
+        (CellWorld::calculate_chunk_pos(chunk_pos) * CHUNK_SIZE * CELL_SIZE.xy().as_ivec2())
+            .as_vec2();
     let chunk = world.get_chunk(chunk_pos);
     if let Some(chunk) = chunk {
         for y in 0..CHUNK_SIZE.y {
@@ -61,7 +62,9 @@ fn render_chunk(
                     .into();
 
                     material_data.push(InstanceData {
-                        position: (((cell_pos.as_vec2() + cell.1) * CELL_SIZE.xy())+chunk_pos_local).extend(0f32),
+                        position: (((cell_pos.as_vec2() + cell.1) * CELL_SIZE.xy())
+                            + chunk_pos_local)
+                            .extend(0f32),
                         scale: 1.0,
                         color: color,
                     })

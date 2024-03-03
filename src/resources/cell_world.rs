@@ -1,6 +1,8 @@
 use bevy::{prelude::*, utils::HashMap};
 
 use crate::enums::{CHUNK_SIZE, CHUNK_SIZE_LEN};
+
+#[derive(Clone, Copy)]
 pub struct Chunk {
     pub cells: [Option<(usize, Vec2)>; CHUNK_SIZE_LEN],
     pub cell_count: usize,
@@ -47,6 +49,33 @@ impl Chunk {
         }
     }
 
+    pub fn vec_index_to_ivec(index: usize) -> Option<IVec2> {
+        if index < (CHUNK_SIZE.x * CHUNK_SIZE.y) as usize {
+            let y = index / CHUNK_SIZE.y as usize;
+            let x = index % CHUNK_SIZE.x as usize;
+            Some(IVec2 {
+                x: x as i32,
+                y: y as i32,
+            })
+        } else {
+            None
+        }
+    }
+
+    pub fn get_index_below(index: usize) -> Option<usize> {
+        if index >= CHUNK_SIZE.x as usize {
+            // Handle edge case for index in the top row
+            if index < CHUNK_SIZE.x as usize {
+                return None;
+            }
+
+            // Calculate index upwards using integer division
+            Some(index - CHUNK_SIZE.x as usize)
+        } else {
+            None
+        }
+    }
+
     pub fn global_pos_to_chunk_pos(global_pos: IVec2) -> IVec2 {
         // Adjust the global_pos for modulo operation to ensure positive results
         let mod_x = ((global_pos.x % CHUNK_SIZE.x) + CHUNK_SIZE.x) % CHUNK_SIZE.x;
@@ -82,6 +111,10 @@ impl CellWorld {
     pub fn get_mut_chunk(&mut self, pos: IVec2) -> Option<&mut Chunk> {
         self.chunks.get_mut(&CellWorld::calculate_chunk_pos(pos))
     }
+
+    // pub fn get_mut_or_create_chunk(&mut self, pos: IVec2) -> &mut Chunk {
+
+    // }
 
     pub fn get_chunk(&self, pos: IVec2) -> Option<&Chunk> {
         self.chunks.get(&CellWorld::calculate_chunk_pos(pos))

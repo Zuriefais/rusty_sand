@@ -16,12 +16,16 @@ use crate::{
         cell_management::{
             remove_cell, spawn_cell, spawn_cell_on_touch, spawn_or_remove_cell_on_click,
         },
-        // physics::{fluid_physics, sand_physics, tap_physics},
+        physics::physics,
         player::move_player,
         render::render,
         ui_systems::{
-            cell_list_ui, check_egui_hover,  chunk_gizmo, //check_is_empty_on_mouse_pos,
-            my_cursor_system, show_cell_count, spawn_cell_type,
+            cell_list_ui,
+            check_egui_hover,
+            chunk_gizmo, //check_is_empty_on_mouse_pos,
+            my_cursor_system,
+            show_cell_count,
+            spawn_cell_type,
         },
         window_management::set_window_icon,
     },
@@ -60,7 +64,7 @@ impl Plugin for SetupPlugin {
             .add_systems(Update, spawn_cell_type)
             .add_systems(Update, my_cursor_system)
             .add_systems(Update, spawn_or_remove_cell_on_click)
-            // .add_systems(Update, (sand_physics, fluid_physics, tap_physics))
+            .add_systems(FixedUpdate, physics)
             .add_systems(Update, move_camera)
             .insert_resource(CellWorld::default())
             .insert_resource(CellTypeToSpawn::default())
