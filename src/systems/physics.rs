@@ -17,27 +17,24 @@ pub fn physics(mut world: ResMut<CellWorld>, assets: Res<CellAssets>) {
         // }
         let mut to_swap_list = vec![];
         let mut to_move_list = vec![];
+        let mut to_add_list = vec![];
 
         for i in 0..chunk.cells.len() - 1 {
             match chunk.cells[i] {
-                Some(cell) => {
-                    match assets.assets_physics_behavior_vec.get(cell.0) {
-                        Some(behavior) => {
-                            match behavior {
-                                Sand => {
-                                    sand_physics(i, &chunk, &mut to_swap_list, &mut to_move_list);
-                                },
-                                Fluid => {
-
-                                },
-                                Tap(fluid) => {},
-                                Solid => {},
-                            }
+                Some(cell) => match assets.assets_physics_behavior_vec.get(cell.0) {
+                    Some(behavior) => match behavior {
+                        Sand => {
+                            sand_physics(i, &chunk, &mut to_swap_list, &mut to_move_list);
                         }
-                        None => {},
-                    }
+                        Fluid => {}
+                        Tap(to_spawn) => {
+                            tap_physics(&mut to_add_list, i, chunk, to_spawn, &assets);
+                        }
+                        Solid => {}
+                    },
+                    None => {}
                 },
-                None => {},
+                None => {}
             }
         }
 
@@ -54,10 +51,15 @@ pub fn physics(mut world: ResMut<CellWorld>, assets: Res<CellAssets>) {
                 }
             }
         }
+        for to_add in to_add_list {
+            if let Some(cell) = chunk.cells.get_mut(to_add.0) {
+                *cell = Some(to_add.1);
+            }
+        }
     }
 }
 
-pub fn sand_physics(
+fn sand_physics(
     i: usize,
     chunk: &Chunk,
     to_swap_list: &mut Vec<(usize, usize)>,
@@ -85,6 +87,14 @@ pub fn sand_physics(
     }
 }
 
-pub fn fluid_physics() {}
+fn tap_physics(to_add_list: &mut Vec<(usize, (usize, Vec2))>, i: usize, chunk: &Chunk, to_spawn: &String, assets: &CellAssets) {
+    if let Some(cell_below_index) = Chunk::get_index_below(i) {
+        if chunk.cells[cell_below_index].is_none() {
+            if let Some(asset_id) = assets.get_index_by_name(to_spawn.to_string()) {
+                to_add_list.push((cell_below_index, (asset_id, Vec2::ZERO)))
+            }
+        }
+    };
+}
 
-pub fn tap_physics() {}
+fn fluid_physics() {}
