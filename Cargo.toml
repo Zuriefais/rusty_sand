@@ -5,7 +5,7 @@ edition = "2021"
 authors = ["Zuriefais"]
 
 [dependencies]
-bevy = {version = "0.12.1", features = ["multi-threaded", "dynamic_linking"]}
+bevy = {version = "0.12.1", features = ["multi-threaded", ]}
 bevy-fps-counter = "0.3.0"
 bevy-inspector-egui = "0.22.1"
 bevy_enum_filter = "0.3.0"
@@ -28,10 +28,10 @@ default-features = false
 features = ["default_fonts"]
 
 [target.'cfg(target_os = "linux")'.dependencies]
-bevy = {version = "0.12", features = ["multi-threaded", "dynamic_linking", "trace"]}
+bevy = {version = "0.12.1", features = ["multi-threaded", "trace"]}
 
 [target.'cfg(not(target_os = "linux"))'.dependencies]
-bevy = {version = "0.12", features = ["multi-threaded", "trace"]}
+bevy = {version = "0.12.1", features = ["multi-threaded", "trace"]}
 
 [toolchain]
 channel = "nightly"

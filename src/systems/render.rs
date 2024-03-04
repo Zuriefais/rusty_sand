@@ -5,7 +5,6 @@ use crate::{
     resources::{cell_world::CellWorld, CellAssets},
 };
 use bevy::prelude::*;
-use rayon::prelude::*;
 
 pub fn render(
     world: Res<CellWorld>,
